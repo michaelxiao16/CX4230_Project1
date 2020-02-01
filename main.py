@@ -2,7 +2,12 @@
 from queue import PriorityQueue
 
 def main():
-    fel = 
+    # Priority queue of time stamped threads
+    fel = PriorityQueue()
+    wait_list = PriorityQueue()
+
+
+
 
 
 
