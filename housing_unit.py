@@ -16,7 +16,7 @@ class HousingUnit:
 
     def get_crime(self):
         return self.crime
-    
+
     def get_education(self):
         return self.education
 
