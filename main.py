@@ -20,6 +20,22 @@ class Event:
         self.is_thread = is_thread
         self.cv = cv
 
+    def __gt__(self, other: Event):
+        return self.time_stamp > other.timestamp
+
+    def __lt__(self, other: Event):
+        return self.time_stamp < other.timestamp
+
+    def __eq__(self, other: Event):
+        return self.time_stamp == other.timestamp
+
+    def __ne__(self, other: Event):
+        return not self.__eq__(other)
+
+
+def schedule_event(event_i: Event):
+    fel.put(event_i)
+
 
 if __name__ == "__main__":
     # Calls to setup grid and instantiate threads
