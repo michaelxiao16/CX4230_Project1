@@ -1,5 +1,3 @@
-from typing import Any
-
 import numpy as np
 from random import seed
 from random import random
@@ -7,14 +5,14 @@ class Grid:
     """ A class to represent simulation Grid """
     def __init__(self, rows, columns):
         seed(16)
-        highway_col = random()
         self.grid = self.create_grid(columns, rows)
+
         self.businesses = []
         self.freeways = []
         self.education = []
+        self.crime_centers = []
 
     """ GRID FEATURES -----------------------------------------------------------------------------------------------"""
-
     def make_freeway(self, rand, num_freeways):
         num_rows = self.get_num_rows()
         num_cols = self.get_num_cols()
@@ -131,8 +129,6 @@ class GridSquare:
         return self.price
     def get_crime(self):
         return self.crime
-    def get_crime(self):
-        return self.crime
     def get_education(self):
         return self.education
     def get_business(self):
@@ -141,8 +137,6 @@ class GridSquare:
         return self.freeway
 
     """ GRID SQUARE SETTERS -----------------------------------------------------------------------------------------"""
-    def set_crime(self, boolean):
-        self.crime = boolean
 
     def set_education(self):
         self.education = boolean
@@ -152,6 +146,10 @@ class GridSquare:
 
     def set_freeway(self, boolean):
         self.freeway = boolean
+
+    def set_crime(self, boolean):
+        self.crime = boolean
+
 
 
 if __name__ == "__main__":
