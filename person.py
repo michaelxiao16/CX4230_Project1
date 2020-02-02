@@ -1,4 +1,5 @@
-class Person:
+from threading import Thread
+class Person(Thread):
     """ A class to represent people in simulation """
 
 
@@ -15,3 +16,7 @@ class Person:
         self.time_remaining = time_remaining
         self.income = income
         self.price_point = price_point
+
+    def run(self):
+        """ Called during main loop """
+        self.wait()
