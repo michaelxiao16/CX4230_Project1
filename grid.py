@@ -46,16 +46,16 @@ class Grid:
 
     def make_businesses(self, rand, num_biz):
         """ Create a business in the following square """
-        row = rand.randint(self.grid.get_num_rows)
-        column = rand.randint(self.grid.get_num_cols)
+        row = rand.randint(self.grid.get_num_rows())
+        column = rand.randint(self.grid.get_num_cols())
         business = self.get_grid_square(row, column)
         business.set_business(True)
         self.businesses.append(business)
 
     def make_education(self, rand, num_education):
         """ Create a business in the following square """
-        row = rand.randint(self.grid.get_num_rows)
-        column = rand.randint(self.grid.get_num_cols)
+        row = rand.randint(self.grid.get_num_rows())
+        column = rand.randint(self.grid.get_num_cols())
         education = self.get_grid_square(row, column)
         education.set_education(True)
         self.education.append(education)
