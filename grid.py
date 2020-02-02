@@ -13,6 +13,7 @@ class Grid:
         self.crime_centers = []
 
     """ GRID FEATURES -----------------------------------------------------------------------------------------------"""
+
     def make_freeway(self, rand, num_freeways):
         num_rows = self.get_num_rows()
         num_cols = self.get_num_cols()
@@ -60,6 +61,7 @@ class Grid:
         self.education.append(education)
 
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
+
     def get_size(self):
         return self.grid.shape
 
@@ -149,8 +151,6 @@ class GridSquare:
 
     def set_crime(self, boolean):
         self.crime = boolean
-
-
 
 if __name__ == "__main__":
     my_grid = Grid(8, 8)
