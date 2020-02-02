@@ -10,12 +10,8 @@ def main():
     waiting_condition = Condition()
 
 
-    while
-
-
-
-
-
+    while (True):
+        print(1)
 
 
 

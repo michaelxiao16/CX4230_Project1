@@ -12,11 +12,13 @@ class Person(Thread):
     def get_price_point(self):
         return self.price_point
 
+
     def __init__(self, time_remaining, income, price_point):
+        super().__init__()
         self.time_remaining = time_remaining
         self.income = income
         self.price_point = price_point
 
     def run(self):
         """ Called during main loop """
-        self.wait()
+        self.wait(1)
