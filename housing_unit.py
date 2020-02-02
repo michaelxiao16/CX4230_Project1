@@ -9,13 +9,19 @@ class HousingUnit:
     """
 
     def get_price(self):
-        return self.time_remaining
+        return self.price
 
-    def get_income(self):
-        return self.income
+    def get_status(self):
+        return self.status
 
-    def get_price_point(self):
-        return self.price_point
+    def get_crime(self):
+        return self.crime
+    
+    def get_education(self):
+        return self.education
+
+    def get_distance(self):
+        return self.distance
 
     def __init__(self, price, status, crime, education, distance):
         self.price = price

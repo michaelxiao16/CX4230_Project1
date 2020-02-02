@@ -9,7 +9,6 @@ def main():
 
     waiting_condition = Condition()
 
-
     while (True):
         print(1)
 
