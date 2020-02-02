@@ -13,7 +13,7 @@ class Person(Thread):
 
     def __init__(self, income: float, price_point: float,
                  cv_time: Condition, cv_housing: Condition,
-                 next_event: Event, pid: int):
+                 next_event: Event, pid: int, home_location: tuple[int, int]):
         super().__init__()
         self.income = income
         self.price_point = price_point
@@ -21,6 +21,7 @@ class Person(Thread):
         self.cv_housing = cv_housing
         self.next_event = next_event
         self.pid = pid
+        self.home_location = home_location
 
     def run(self):
         event = self.next_event
@@ -33,7 +34,7 @@ class Person(Thread):
             self.next_event = None
             cv.release()
         else:
-            while grid.find_appropriate_housing() == None:
+            while grid.find_appropriate_housing() is None:
                 cv.wait()
             event.function()
             self.next_event = None
