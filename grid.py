@@ -87,7 +87,7 @@ class Grid:
 
     def create_grid(self, rows, columns):
         grid = np.array([[GridSquare(r, c,
-            total_houses=10, occupied_houses=10, crime=10, education=10, business=True, freeway=True)
+            total_houses=10, occupied_houses=0, crime=10, education=10, business=True, freeway=True)
             for r in range(rows)] for c in range(columns)])
         return grid
 
@@ -95,8 +95,8 @@ class Grid:
     from person import Person
     def find_appropriate_housing(self, person: Person):
         max_sq = None
-        i = -1
-        j = -1
+        max_i = -1
+        max_j = -1
         for i in range(self.grid.shape[0]):
             for j in range(self.grid.shape[1]):
                 sq: GridSquare = self.grid[i][j]
@@ -105,9 +105,13 @@ class Grid:
                 if sq.price < person.price_point:
                     if max_sq is None:
                         max_sq = sq
+                        max_i = i
+                        max_j = j
                     elif sq.price > max_sq.price:
                         max_sq = sq
-        return max_sq, i, j
+                        max_i = i
+                        max_j = j
+        return max_sq, max_i, max_j
 
 
 class GridSquare:
