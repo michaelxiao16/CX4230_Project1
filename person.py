@@ -1,4 +1,5 @@
-from threading import Thread, Condition
+import time
+from threading import Thread, Condition, Lock
 from typing import Tuple
 import random
 
@@ -7,6 +8,7 @@ class Person(Thread):
     """ A class to represent people in simulation """
     from event import Event
 
+    """ GETTERS -----------------------------------------------------------------------------------------------------"""
     def get_income(self):
         return self.income
 
@@ -21,27 +23,38 @@ class Person(Thread):
         self.pid = pid
         self.home_location = home_location
         self.gl = gl
+        self.cond = Condition(Lock())
+        self.paused = True
+        self.cond.acquire()
+
+    def pause(self):
+        self.paused = True
+        self.cond.acquire()
+
+    def resume(self):
+        self.paused = False
+        self.cond.notify()
+        self.cond.release()
 
     def run(self):
         from main import grid
-        event = self.next_event
-        if event.type == 0:
-            self.gl.cv_time.acquire()
-            while self.gl.clock < self.next_event.time_stamp:
-                self.gl.cv_time.wait()
-            # event.function()
-            self.move_out_event()
-            self.next_event = None
-            self.gl.cv_time.release()
-        else:
-            self.gl.cv_housing.acquire()
-            while grid.find_appropriate_housing(self)[0] is None:
-                self.gl.cv_housing.wait()
-            sq, i, j = grid.find_appropriate_housing(self)
-            # event.function(i, j)
-            self.move_in_event(i, j)
-            self.next_event = None
-            self.gl.cv_housing.release()
+        # A person loops continuously between moving in and moving out
+        while True:
+            event = self.next_event
+            # Time based event: Someone is moving in, then schedule a move out event
+            if event.type == 0:
+                with self.cond:
+                    while self.paused:
+                        self.cond.wait()
+                    # event.function()
+                    self.move_out_event()
+            # Housing based event: wait for house to open up, then schedule a move out event
+            else:
+                with self.cond:
+                    while self.paused:
+                        self.cond.wait()
+                    sq, i, j = grid.find_appropriate_housing(self)
+                    self.move_in_event(i, j)
 
     def move_out_event(self):
         from main import grid, Event
@@ -50,12 +63,9 @@ class Person(Thread):
         loc = self.home_location
         self.home_location = (-1, -1)
         sq.moveout()
-        event = Event(-1, self.pid, self.move_in_event, True, 1)
-        self.schedule_event(event)
-        self.gl.cv_housing.acquire()
-        self.gl.cv_housing.notifyAll()
-        self.gl.cv_housing.release()
+        event = Event(self.gl.clock, self.pid, self.move_in_event, True, 1)
         print("moved out of " + str(loc[0]) + ' ' + str(loc[1]))
+        self.schedule_event(event)
 
     def move_in_event(self, row, col):
         from main import grid, move_out_data, Event
@@ -72,8 +82,8 @@ class Person(Thread):
                 break
         t = self.gl.clock + years
         event = Event(t, self.pid, self.move_out_event, True, 0)
-        self.schedule_event(event)
         print("moved into " + str(loc[0]) + ' ' + str(loc[1]))
+        self.schedule_event(event)
 
     @staticmethod
     def sample_salary_distribution():
@@ -96,10 +106,6 @@ class Person(Thread):
 
     def schedule_event(self, event_i: Event):
         from main import heappush
-        self.gl.queue_lock.acquire()
-        if event_i.type == 0:
-            # fel.put(event_i)
-            heappush(self.gl.fel, event_i)
-        else:
-            self.gl.wait_list.insert(0, event_i)
-        self.gl.queue_lock.release()
+        self.next_event = event_i
+        heappush(self.gl.fel, event_i)
+

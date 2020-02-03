@@ -6,7 +6,6 @@ from random import random, randint
 class Grid:
     """ A class to represent simulation Grid """
     def __init__(self, rows, columns):
-        seed(16)
         self.grid = self.create_grid(columns, rows)
 
         self.businesses = []
