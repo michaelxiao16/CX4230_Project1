@@ -15,6 +15,7 @@ class Grid:
         self.crime_centers = []
 
     """ GRID FEATURES -----------------------------------------------------------------------------------------------"""
+
     def make_freeway(self, rand, num_freeways):
         num_rows = self.get_num_rows()
         num_cols = self.get_num_cols()
@@ -47,21 +48,22 @@ class Grid:
 
     def make_businesses(self, rand, num_biz):
         """ Create a business in the following square """
-        row = rand.randint(self.grid.get_num_rows)
-        column = rand.randint(self.grid.get_num_cols)
+        row = rand.randint(self.grid.get_num_rows())
+        column = rand.randint(self.grid.get_num_cols())
         business = self.get_grid_square(row, column)
         business.set_business(True)
         self.businesses.append(business)
 
     def make_education(self, rand, num_education):
         """ Create a business in the following square """
-        row = rand.randint(self.grid.get_num_rows)
-        column = rand.randint(self.grid.get_num_cols)
+        row = rand.randint(self.grid.get_num_rows())
+        column = rand.randint(self.grid.get_num_cols())
         education = self.get_grid_square(row, column)
         education.set_education(True)
         self.education.append(education)
 
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
+
     def get_size(self):
         return self.grid.shape
 
