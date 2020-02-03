@@ -1,6 +1,8 @@
 import numpy as np
 from random import seed
-from random import random
+from random import random, randint
+
+
 class Grid:
     """ A class to represent simulation Grid """
     def __init__(self, rows, columns):
@@ -83,22 +85,37 @@ class Grid:
 
     def create_grid(self, rows, columns):
         grid = np.array([[GridSquare(r, c,
-            total_houses=10, occupied_houses=10, price=100000, crime=10, education=10, business=True, freeway=True)
+            total_houses=10, occupied_houses=10, crime=10, education=10, business=True, freeway=True)
             for r in range(rows)] for c in range(columns)])
         return grid
 
-    def find_appropriate_housing(self):
-        pass
+
+    from person import Person
+    def find_appropriate_housing(self, person: Person):
+        max_sq = None
+        i = -1
+        j = -1
+        for i in range(self.grid.shape[0]):
+            for j in range(self.grid.shape[1]):
+                sq: GridSquare = self.grid[i][j]
+                if sq.get_total_houses() - sq.get_occupied_houses() <= 0:
+                    continue
+                if sq.price < person.price_point:
+                    if max_sq is None:
+                        max_sq = sq
+                    elif sq.price > max_sq.price:
+                        max_sq = sq
+        return max_sq, i, j
 
 
 class GridSquare:
     """ A class to represent a single square in the simulation Grid
     A grid has a total number of houses, a number of occupied houses, and a list of houses
     """
-    def __init__(self,  r, c, total_houses, occupied_houses, price, crime, education, business, freeway):
+    def __init__(self,  r, c, total_houses, occupied_houses, crime, education, business, freeway):
         self.total_houses = total_houses
         self.occupied_houses = occupied_houses
-        self.price = price
+        self.price = self.sample_monthly_total_costs()
         self.crime = crime
         self.education = education
         self.business = business
@@ -138,7 +155,7 @@ class GridSquare:
 
     """ GRID SQUARE SETTERS -----------------------------------------------------------------------------------------"""
 
-    def set_education(self):
+    def set_education(self, boolean):
         self.education = boolean
 
     def set_business(self, boolean):
@@ -150,10 +167,20 @@ class GridSquare:
     def set_crime(self, boolean):
         self.crime = boolean
 
-
+    @staticmethod
+    def sample_monthly_total_costs():
+        from main import monthly_cost_data
+        rn = randint(0, 100) / 100
+        for i in range(len(monthly_cost_data) - 1, -1, -1):
+            if monthly_cost_data[i][1] < rn:
+                return monthly_cost_data[i][0]
+        return 1
 
 if __name__ == "__main__":
     my_grid = Grid(8, 8)
     print(my_grid.grid)
+    for row in my_grid.grid:
+        for col in row:
+            print(col.get_price())
 
 
