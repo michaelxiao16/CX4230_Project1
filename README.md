@@ -1,6 +1,6 @@
 README for the first CX 4230 Project
 
-# Event-Driven Simulaion Project: City Simulation
+# Event-Driven Simulation Project: City Simulation
 
 
 We are using Python3. To get this to run on the PACE cluster, we did the following:
@@ -36,6 +36,7 @@ they will need to download and install ffmpeg at https://www.ffmpeg.org/download
 
 
 
+## Other Notes
 - Grid system
 - Number of people living in Grid determines population density
 
