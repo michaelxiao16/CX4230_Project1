@@ -5,12 +5,13 @@ README for the first CX 4230 Project
 
 We are using Python3.
 
-If TAs want to run chart
 
 To run the project:
 - navigate to CX4230_Project1/ directory
 - run python main.py
 
+Images and video are produced by our simulation and viewable as "chart.mp4". If TAs want to run our images and video, 
+they will need to download and install ffmpeg at https://www.ffmpeg.org/download.html
 
 ## Project Files
 
