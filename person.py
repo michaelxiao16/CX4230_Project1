@@ -1,4 +1,3 @@
-import time
 from threading import Thread, Condition, Lock
 from typing import Tuple
 import random
@@ -37,7 +36,6 @@ class Person(Thread):
         self.cond.release()
 
     def run(self):
-        from main import grid
         # A person loops continuously between moving in and moving out
         event = self.next_event
         if event is None:
@@ -47,28 +45,28 @@ class Person(Thread):
             self.move_out_event()
         # Housing based event: wait for house to open up, then schedule a move out event
         elif event.type == 1:
-            sq, i, j = grid.find_appropriate_housing(self)
+            sq, i, j = self.gl.grid.find_appropriate_housing(self)
             if sq is None:
                 return
             self.move_in_event(i, j)
 
     def move_out_event(self):
-        from main import grid, Event
+        from main import Event
         from grid import GridSquare
-        sq: GridSquare = grid.get_grid_square(self.home_location[0], self.home_location[1])
+        sq: GridSquare = self.gl.grid.get_grid_square(self.home_location[0], self.home_location[1])
         loc = self.home_location
         self.home_location = (-1, -1)
         sq.moveout()
-        event = Event(self.gl.clock, self.pid, self.move_in_event, True, 1)
+        event = Event(self.gl.clock + random.randint(0, 15), self.pid, self.move_in_event, True, 1)
         print("moved out of " + str(loc[0]) + ' ' + str(loc[1]))
         self.schedule_event(event)
 
     def move_in_event(self, row, col):
-        from main import grid, move_out_data, Event
+        from main import move_out_data, Event
         from grid import GridSquare
         self.home_location = (row, col)
         loc = self.home_location
-        sq: GridSquare = grid.get_grid_square(self.home_location[0], self.home_location[1])
+        sq: GridSquare = self.gl.grid.get_grid_square(self.home_location[0], self.home_location[1])
         sq.movein()
         rn = random.randint(0, 100) / 100
         years = 0

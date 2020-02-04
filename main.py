@@ -13,7 +13,7 @@ from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_t
 
 
 class Globals:
-    def __init__(self, fel_i, waiting_list_i, clock, cv_housing, cv_time, queue_lock, threads):
+    def __init__(self, fel_i, waiting_list_i, clock, cv_housing, cv_time, queue_lock, threads, grid):
         self.fel = fel_i
         self.wait_list = waiting_list_i
         self.clock = clock
@@ -21,14 +21,15 @@ class Globals:
         self.cv_time = cv_time
         self.queue_lock = queue_lock
         self.threads = threads
+        self.grid = grid
 
 # fel = PriorityQueue()
-gl = Globals([], [], 0, Condition(Lock()), Condition(Lock()), Lock(), [])
 salary_data = get_salary_prob()
 move_out_data = get_move_out_prob()
 monthly_cost_data = get_monthly_total_costs_prob()
 percent_monthly_income_data = get_percent_monthly_income()
-grid = Grid(10, 10)
+gl = Globals([], [], 0, Condition(Lock()), Condition(Lock()), Lock(), [], Grid(10, 10))
+
 
 
 def schedule_event(event_i: Event):
@@ -38,9 +39,9 @@ def schedule_event(event_i: Event):
 
 
 def assign_random_house(person_i):
-    for l in range(grid.grid.shape[0]):
-        for k in range(grid.grid.shape[1]):
-            grid_square: GridSquare = grid.grid[l][k]
+    for l in range(gl.grid.grid.shape[0]):
+        for k in range(gl.grid.grid.shape[1]):
+            grid_square: GridSquare = gl.grid.grid[l][k]
             if grid_square.get_total_houses() - grid_square.get_occupied_houses() > 0:
                 grid_square.movein()
                 person_i.home_location = (l, k)
@@ -54,7 +55,7 @@ if __name__ == "__main__":
 
     graph_data = []
 
-    for i in range(600):
+    for i in range(2000):
         gl.threads.append(Person(None, i, (-1, -1), gl))
         rn = random.randint(0, 100) / 100
         years = 0
@@ -62,6 +63,7 @@ if __name__ == "__main__":
             if move_out_data[j] < rn:
                 years = i + 1
                 break
+        print(years)
         t = gl.clock + years
         event = Event(t, i, Person.move_out_event, True, 0)
         schedule_event(event)
@@ -71,7 +73,7 @@ if __name__ == "__main__":
         gl.threads[i].start()
 
     counter = 0
-    while counter < 12000:
+    while counter < 1200:
 
         if counter % 10 == 0:
             arr = np.zeros((10, 10))
@@ -92,15 +94,18 @@ if __name__ == "__main__":
                 gl.clock = event.time_stamp
                 person: Person = gl.threads[event.process_id]
                 person.next_event = event
+                loc1 = person.home_location
+                print(gl.grid.grid[loc1[0]][loc1[1]].occupied_houses)
                 person.run()
                 person.join()
+                print(gl.grid.grid[loc1[0]][loc1[1]].occupied_houses)
             elif event.is_thread and event.type == 1:
                 gl.wait_list.append(event)
                 # gl.threads[event.process_id].join()
 
         for i in range(len(gl.wait_list) - 1, -1, -1):
             event = gl.wait_list[i]
-            sq, _, _ = grid.find_appropriate_housing(gl.threads[event.process_id])
+            sq, _, _ = gl.grid.find_appropriate_housing(gl.threads[event.process_id])
             if sq is not None:
                 del gl.wait_list[i]
                 t = gl.threads[event.process_id]
