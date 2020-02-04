@@ -9,7 +9,7 @@ We are using Python3. To get this to run on the PACE cluster, we did the followi
 > conda activate
 ```
 This will start a anaconda virtual environment, on which Python3+ should be the default. 
-Verify that the version of python running is Python3+ - in our case we had Python 3.7.4
+Verify that the version of python running is Python3+. In our case we had Python 3.7.4
 
 
 To run the project:
