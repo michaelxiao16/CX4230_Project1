@@ -4,18 +4,18 @@ README for the first CX 4230 Project
 
 
 We are using Python3. To get this to run on the PACE cluster, we did the following:
-
 ```
 > module load anaconda3/2019.10
 > conda activate
 ```
-
 And verify that the version of python running is Python3+, in our case we had Python 3.7.4
 
 
 To run the project:
-- navigate to CX4230_Project1/ directory
-- run python main.py
+```
+> cd CX4230_Project1/ 
+> python main.py
+```
 
 Images and video are produced by our simulation and viewable as "chart.mp4". If TAs want to run our images and video, 
 they will need to download and install ffmpeg at https://www.ffmpeg.org/download.html
