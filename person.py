@@ -39,22 +39,18 @@ class Person(Thread):
     def run(self):
         from main import grid
         # A person loops continuously between moving in and moving out
-        while True:
-            event = self.next_event
-            # Time based event: Someone is moving in, then schedule a move out event
-            if event.type == 0:
-                with self.cond:
-                    while self.paused:
-                        self.cond.wait()
-                    # event.function()
-                    self.move_out_event()
-            # Housing based event: wait for house to open up, then schedule a move out event
-            else:
-                with self.cond:
-                    while self.paused:
-                        self.cond.wait()
-                    sq, i, j = grid.find_appropriate_housing(self)
-                    self.move_in_event(i, j)
+        event = self.next_event
+        if event is None:
+            return
+        # Time based event: Someone is moving in, then schedule a move out event
+        if event.type == 0:
+            self.move_out_event()
+        # Housing based event: wait for house to open up, then schedule a move out event
+        elif event.type == 1:
+            sq, i, j = grid.find_appropriate_housing(self)
+            if sq is None:
+                return
+            self.move_in_event(i, j)
 
     def move_out_event(self):
         from main import grid, Event

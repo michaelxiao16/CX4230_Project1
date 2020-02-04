@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     graph_data = []
 
-    for i in range(100):
+    for i in range(600):
         gl.threads.append(Person(None, i, (-1, -1), gl))
         rn = random.randint(0, 100) / 100
         years = 0
@@ -65,15 +65,16 @@ if __name__ == "__main__":
         t = gl.clock + years
         event = Event(t, i, Person.move_out_event, True, 0)
         schedule_event(event)
-        gl.threads[i].next_event = event
+        # gl.threads[i].next_event = event
+        gl.threads[i].next_event = None
         assign_random_house(gl.threads[i])
         gl.threads[i].start()
 
     counter = 0
-    while counter < 1000:
+    while counter < 12000:
 
         if counter % 10 == 0:
-            arr = np.zeros((100, 100))
+            arr = np.zeros((10, 10))
             for person in gl.threads:
                 if person.home_location[0] != -1:
                     loc = person.home_location
@@ -90,17 +91,22 @@ if __name__ == "__main__":
             if event.is_thread and event.type == 0:
                 gl.clock = event.time_stamp
                 person: Person = gl.threads[event.process_id]
-                person.resume()
+                person.next_event = event
+                person.run()
+                person.join()
             elif event.is_thread and event.type == 1:
                 gl.wait_list.append(event)
+                # gl.threads[event.process_id].join()
 
         for i in range(len(gl.wait_list) - 1, -1, -1):
             event = gl.wait_list[i]
-            sq, i, j = grid.find_appropriate_housing(gl.threads[event.process_id])
+            sq, _, _ = grid.find_appropriate_housing(gl.threads[event.process_id])
             if sq is not None:
-                t = gl.threads[event.process_id]
-                t.resume()
                 del gl.wait_list[i]
+                t = gl.threads[event.process_id]
+                t.next_event = event
+                t.run()
+                t.join()
 
         counter += 1
         print(counter)
