@@ -1,5 +1,8 @@
 README for the first CX 4230 Project
 
+# Event-Driven Simulaion Project: City Simulation
+
+
 We are using Python3.
 
 If TAs want to run chart
@@ -7,6 +10,9 @@ If TAs want to run chart
 To run the project:
 - navigate to CX4230_Project1/ directory
 - run python main.py
+
+
+## Project Files
 
 - main.py is the main functionality containing all globals and running the events
 
