@@ -4,4 +4,4 @@ venv
 *.xml
 .idea
 __pycache__/*
-chart.mp4
+ffmpeg/*
