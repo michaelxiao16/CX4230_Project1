@@ -2,7 +2,7 @@ import csv
 
 
 def get_salary_prob():
-    with open("salary_prob.csv", 'r') as csv_file:
+    with open("static/salary_prob.csv", 'r') as csv_file:
         rows = []
         csvreader = csv.reader(csv_file)
         for row in csvreader:
@@ -18,7 +18,7 @@ def get_salary_prob():
 
 
 def get_move_out_prob():
-    with open("move_out_prob.csv", 'r') as csv_file:
+    with open("static/move_out_prob.csv", 'r') as csv_file:
         rows = []
         csvreader = csv.reader(csv_file)
         for row in csvreader:
@@ -32,7 +32,7 @@ def get_move_out_prob():
 
 
 def get_monthly_total_costs_prob():
-    with open("monthly_total_costs.csv", 'r') as csv_file:
+    with open("static/monthly_total_costs.csv", 'r') as csv_file:
         rows = []
         csvreader = csv.reader(csv_file)
         for row in csvreader:
@@ -48,7 +48,7 @@ def get_monthly_total_costs_prob():
 
 
 def get_percent_monthly_income():
-    with open("percent_monthly_income.csv", 'r') as csv_file:
+    with open("static/percent_monthly_income.csv", 'r') as csv_file:
         rows = []
         csvreader = csv.reader(csv_file)
         for row in csvreader:
