@@ -1,17 +1,20 @@
 """ Import statements """
-import random
 from heapq import heappush, heappop
+from typing import List
+
 import numpy as np
+import random
 
 import grid_view
 from event import Event
 from grid import Grid
-from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob,\
+from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob, \
     get_percent_monthly_income
 
-GRID_ROWS = 40
-GRID_COLS = 40
+GRID_ROWS = 10
+GRID_COLS = 10
 NUM_RUNS = 1200
+NUM_THREADS = 2000
 
 
 class Globals:
@@ -54,29 +57,37 @@ def assign_first_available_house(person_i):
     """
     Assign this person to the first available house
     :param person_i: thread to be assigned to house
+    :return True if the assignment was successful, false otherwise
     """
     for m in range(gl.grid.grid.shape[0]):
         for k in range(gl.grid.grid.shape[1]):
             grid_square: GridSquare = gl.grid.grid[m][k]
             if grid_square.get_total_houses() - grid_square.get_occupied_houses() > 0:
-                grid_square.movein()
+                grid_square.movein(person_i)
                 person_i.home_location = (m, k)
-                return
+                return True
+    return False
 
 
 def initialize_persons(num_threads=20000):
     """
     Instantiates num_threads amount of Person objects with "random" housing and schedules move out events for them
+    Important note: the assigning of individuals may fail. In this case individuals who cannot afford any houses that
+    remain will be assigned to location (-1, -1), and they will be put on the waiting list with a move in event
+    scheduled.
     :param num_threads: amount of Persons to generate
     """
     for ii in range(num_threads):
         gl.threads.append(Person(None, ii, (-1, -1), gl))
-        years = Person.sample_move_out_distribution(0)
-        t_i = gl.clock + years
-        event_i = Event(t_i, ii, Person.move_out_event, True, 0)
-        schedule_event(event_i)
+        assigned = assign_first_available_house(gl.threads[ii])
+        if assigned:
+            years = Person.sample_move_out_distribution(0)
+            t_i = gl.clock + years
+            event_i = Event(t_i, ii, Person.move_out_event, True, 0)
+            schedule_event(event_i)
+        else:
+            schedule_event(Event(gl.clock + random.randint(0, 2), ii, Person.move_in_event, True, 1))
         gl.threads[ii].next_event = None
-        assign_first_available_house(gl.threads[ii])
         gl.threads[ii].start()
 
 
@@ -95,12 +106,45 @@ def sim_snapshot(counter_i, frequency=10):
         graph_data.append(arr)
 
 
+def get_average_disparity():
+    """
+    Function to return average disparity among all squares on the grid. The average income from the square is compared
+    with that of all of its immediate neighbors. Some index checking is performed to ensure that there is no indexing
+    out of bounds
+    :return: average difference in income between a square and its neighbors
+    """
+    aggregate = 0
+    count = 0
+    max_row, max_col = gl.grid.grid.shape
+    for iii in range(max_row):
+        for jjj in range(max_col):
+            neighbors: List[GridSquare] = []
+            if iii > 0:
+                neighbors.append(gl.grid.get_grid_square(iii - 1, jjj))
+            if jjj > 0:
+                neighbors.append(gl.grid.get_grid_square(iii, jjj - 1))
+            if iii < max_row - 1:
+                neighbors.append(gl.grid.get_grid_square(iii + 1, jjj))
+            if jjj < max_col - 1:
+                neighbors.append(gl.grid.get_grid_square(iii, jjj + 1))
+
+            sq_d: GridSquare = gl.grid.get_grid_square(iii, jjj)
+            agg_local = 0
+            for n in neighbors:
+                agg_local += np.abs((sq_d.get_average_income() - n.get_average_income()))
+            aggregate += agg_local
+            count += 1
+    return aggregate/count
+
+
 if __name__ == "__main__":
     # import statements to avoid circular imports
     from person import Person
     from grid import GridSquare
     graph_data = []
-    initialize_persons()
+    initialize_persons(num_threads=NUM_THREADS)
+    # print the starting average disparity
+    print(get_average_disparity())
     counter = 0
     while counter < NUM_RUNS:
         # Attempt to record a snapshot of the simulation
@@ -134,5 +178,6 @@ if __name__ == "__main__":
                 t.join()
 
         counter += 1
+    # print the ending average disparity
+    print(get_average_disparity())
     grid_view.main(graph_data)
-

@@ -36,6 +36,7 @@ class Person(Thread):
         the future event list). Otherwise, we check for available appropriate housing. If there is none, return without
         doing anything.
         """
+        from main import Event
         event = self.next_event
         # Important for when the people are initialized with no future events
         if event is None:
@@ -47,6 +48,9 @@ class Person(Thread):
         elif event.type == 1:
             sq, i, j = self.gl.grid.find_appropriate_housing(self)
             if sq is None:
+                # the event has already been popped from the future event list. Put it back. This is mostly a failsafe
+                # mechanism for threading as there SHOULD be no concurrency.
+                self.schedule_event(Event(self.gl.clock + random.randint(0, 15), self.pid, self.move_in_event, True, 1))
                 return
             self.move_in_event(i, j)
 
@@ -59,7 +63,7 @@ class Person(Thread):
         sq: GridSquare = self.gl.grid.get_grid_square(self.home_location[0], self.home_location[1])
         loc = self.home_location
         self.home_location = (-1, -1)
-        sq.moveout()
+        sq.moveout(self)
         # Create new move in event to add to the future event list
         # TODO: Looks like the event is not being scheduled according to probability distribution. Needs to be fixed
         event = Event(self.gl.clock + random.randint(0, 15), self.pid, self.move_in_event, True, 1)
@@ -78,7 +82,7 @@ class Person(Thread):
         self.home_location = (row, col)
         loc = self.home_location
         sq: GridSquare = self.gl.grid.get_grid_square(self.home_location[0], self.home_location[1])
-        sq.movein()
+        sq.movein(self)
         years = 0
         years = self.sample_move_out_distribution(years)
         t = self.gl.clock + years

@@ -1,10 +1,13 @@
+from typing import List
+
 import numpy as np
-from random import seed
 from random import random, randint
+from person import Person
 
 
 class Grid:
     """ A class to represent simulation Grid """
+
     def __init__(self, rows, columns):
         self.grid = self.create_grid(columns, rows)
 
@@ -86,10 +89,10 @@ class Grid:
 
     def create_grid(self, rows, columns):
         grid = np.array([[GridSquare(r, c,
-            total_houses=10, occupied_houses=0, crime=10, education=10, business=True, freeway=True)
-            for r in range(rows)] for c in range(columns)])
+                                     total_houses=10, occupied_houses=0, crime=10, education=10, business=True,
+                                     freeway=True)
+                          for r in range(rows)] for c in range(columns)])
         return grid
-
 
     from person import Person
     def find_appropriate_housing(self, person: Person):
@@ -115,9 +118,11 @@ class Grid:
 
 class GridSquare:
     """ A class to represent a single square in the simulation Grid
-    A grid has a total number of houses, a number of occupied houses, and a list of houses
+    A grid has a total number of houses, a number of occupied houses, and a list of houses. The grid-square also
+    contains a list of pointers to every Person that lives in its square.
     """
-    def __init__(self,  r, c, total_houses, occupied_houses, crime, education, business, freeway):
+
+    def __init__(self, r, c, total_houses, occupied_houses, crime, education, business, freeway):
         self.total_houses = total_houses
         self.occupied_houses = occupied_houses
         self.price = self.sample_monthly_total_costs()
@@ -125,18 +130,22 @@ class GridSquare:
         self.education = education
         self.business = business
         self.freeway = freeway
+        self.threads: List[Person] = []
 
     """ Increment and decrement occupied houses """
-    def movein(self):
+
+    def movein(self, thread: Person):
         if self.occupied_houses < self.total_houses:
             self.occupied_houses += 1
+            self.threads.append(thread)
             return "Moved in to a house"
         else:
             return "Could not move in to a house"
 
-    def moveout(self):
+    def moveout(self, thread: Person):
         if self.occupied_houses > 0:
             self.occupied_houses -= 1
+            self.threads.remove(thread)
             return "Removed one occupied house"
         else:
             return "Could not move out of occupied house"
@@ -145,16 +154,22 @@ class GridSquare:
 
     def get_total_houses(self):
         return self.total_houses
+
     def get_occupied_houses(self):
         return self.occupied_houses
+
     def get_price(self):
         return self.price
+
     def get_crime(self):
         return self.crime
+
     def get_education(self):
         return self.education
+
     def get_business(self):
         return self.business
+
     def get_freeway(self):
         return self.freeway
 
@@ -172,6 +187,19 @@ class GridSquare:
     def set_crime(self, boolean):
         self.crime = boolean
 
+    def get_average_income(self):
+        """
+        For every person living in this grid square, sum up their income and return the average. Mainly for use
+        in gathering metrics at the beginning and end of the experiments.
+        :return: average income for all Persons in this square
+        """
+        if len(self.threads) == 0:
+            return 0
+        agg = 0
+        for t in self.threads:
+            agg += t.get_income()
+        return agg / len(self.threads)
+
     @staticmethod
     def sample_monthly_total_costs():
         from main import monthly_cost_data
@@ -181,11 +209,10 @@ class GridSquare:
                 return monthly_cost_data[i][0]
         return 1
 
+
 if __name__ == "__main__":
     my_grid = Grid(8, 8)
     print(my_grid.grid)
     for row in my_grid.grid:
         for col in row:
             print(col.get_price())
-
-
