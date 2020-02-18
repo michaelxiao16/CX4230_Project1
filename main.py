@@ -11,10 +11,10 @@ from grid import Grid
 from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob, \
     get_percent_monthly_income
 
-GRID_ROWS = 10
-GRID_COLS = 10
+GRID_ROWS = 40
+GRID_COLS = 40
 NUM_RUNS = 1200
-NUM_THREADS = 2000
+NUM_THREADS = 20000
 
 
 class Globals:
@@ -33,7 +33,7 @@ class Globals:
         self.threads = threads
         self.grid = grid
 
-
+""" STATIC variables """
 # Define all probability distributions
 salary_data = get_salary_prob()
 move_out_data = get_move_out_prob()
