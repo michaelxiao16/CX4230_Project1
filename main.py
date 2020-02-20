@@ -11,10 +11,10 @@ from grid import Grid
 from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob, \
     get_percent_monthly_income
 
-GRID_ROWS = 10
-GRID_COLS = 10
+GRID_ROWS = 80
+GRID_COLS = 80
 NUM_RUNS = 1200
-NUM_THREADS = 2000
+NUM_THREADS = 100000
 
 
 class Globals:
