@@ -11,10 +11,10 @@ from grid import Grid
 from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob, \
     get_percent_monthly_income
 
-GRID_ROWS = 80
-GRID_COLS = 80
-NUM_RUNS = 1200
-NUM_THREADS = 100000
+GRID_ROWS = 10
+GRID_COLS = 10
+NUM_RUNS = 12000
+NUM_THREADS = GRID_COLS * GRID_ROWS * 20
 
 
 class Globals:
@@ -34,6 +34,7 @@ class Globals:
         self.grid = grid
 
 
+""" STATIC variables """
 # Define all probability distributions
 salary_data = get_salary_prob()
 move_out_data = get_move_out_prob()
@@ -53,20 +54,25 @@ def schedule_event(event_i: Event):
     gl.threads[event_i.process_id].next_event = event_i
 
 
-def assign_first_available_house(person_i):
+def assign_first_available_house(person_i, first_house):
     """
     Assign this person to the first available house
+    :param first_house: optimization parameter to speed up initial assignment by not checking houses already assigned
     :param person_i: thread to be assigned to house
     :return True if the assignment was successful, false otherwise
     """
-    for m in range(gl.grid.grid.shape[0]):
+    for m in range(first_house[0], gl.grid.grid.shape[0]):
         for k in range(gl.grid.grid.shape[1]):
             grid_square: GridSquare = gl.grid.grid[m][k]
             if grid_square.get_total_houses() - grid_square.get_occupied_houses() > 0:
                 grid_square.movein(person_i)
                 person_i.home_location = (m, k)
-                return True
-    return False
+                pair = (m, k)
+                if grid_square.get_total_houses() - grid_square.get_occupied_houses() == 0:
+                    if k == GRID_COLS:
+                        pair = (m + 1, 0)
+                return True, pair
+    return False, first_house
 
 
 def initialize_persons(num_threads=20000):
@@ -77,9 +83,12 @@ def initialize_persons(num_threads=20000):
     scheduled.
     :param num_threads: amount of Persons to generate
     """
+    # first house is the optimization parameter. It keeps track of where we are in the array so we don't have to check
+    # places we've already assigned
+    first_house = (0, 0)
     for ii in range(num_threads):
         gl.threads.append(Person(None, ii, (-1, -1), gl))
-        assigned = assign_first_available_house(gl.threads[ii])
+        assigned, first_house = assign_first_available_house(gl.threads[ii], first_house)
         if assigned:
             years = Person.sample_move_out_distribution(0)
             t_i = gl.clock + years
@@ -91,7 +100,7 @@ def initialize_persons(num_threads=20000):
         gl.threads[ii].start()
 
 
-def sim_snapshot(counter_i, frequency=10):
+def sim_snapshot(counter_i, frequency=500):
     """
     Take a data snapshot of the simulation if the mod of the counter and the frequency is zero
     :param counter_i: current iteration of simulation run

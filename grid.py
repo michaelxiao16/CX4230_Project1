@@ -3,18 +3,55 @@ from typing import List
 import numpy as np
 from random import random, randint
 from person import Person
+from bintrees import AVLTree
+
+
+def get_unique_key(gs, tree:AVLTree):
+    """
+    Many gridsquares will have the same price, so it's important to generate a unique key since the AVL library doesn't
+    allow for duplicate keys
+    :param gs: gridsquare
+    :param tree: avl to check keys against
+    :return: a unique key close to the price point p
+    """
+    p = gs.get_price()
+    if p in tree:
+        while p in tree:
+            p -= 0.01
+    gs.key = p
+    return p
 
 
 class Grid:
     """ A class to represent simulation Grid """
 
     def __init__(self, rows, columns):
+        """
+        Initialize grid. For every grid square, add it to the AVL, since when the grid is initialized, there are no
+        people living in it, meaning every grid square should be in the tree of available units.
+        :param rows:
+        :param columns:
+        """
         self.grid = self.create_grid(columns, rows)
 
         self.businesses = []
         self.freeways = []
         self.education = []
         self.crime_centers = []
+        self.tree = AVLTree()
+        for row in self.grid:
+            for gs in row:
+                self.add_gs_to_tree(gs)
+
+    """WRAPPER METHODS FOR CONTROLLING ACCESS TO THE TREE OF AVAILABLE GRIDSQUARES"""
+    def add_gs_to_tree(self, gs):
+        k = get_unique_key(gs, self.tree)
+        self.tree[k] = gs
+        gs.in_tree = True
+
+    def remove_gs_from_tree(self, gs):
+        del self.tree[gs.key]
+        gs.in_tree = False
 
     """ GRID FEATURES -----------------------------------------------------------------------------------------------"""
 
@@ -90,39 +127,38 @@ class Grid:
     def create_grid(self, rows, columns):
         grid = np.array([[GridSquare(r, c,
                                      total_houses=10, occupied_houses=0, crime=10, education=10, business=True,
-                                     freeway=True)
+                                     freeway=True, grid=self)
                           for r in range(rows)] for c in range(columns)])
         return grid
 
     from person import Person
+
     def find_appropriate_housing(self, person: Person):
-        max_sq = None
-        max_i = -1
-        max_j = -1
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
-                sq: GridSquare = self.grid[i][j]
-                if sq.get_total_houses() - sq.get_occupied_houses() <= 0:
-                    continue
-                if sq.price < person.price_point:
-                    if max_sq is None:
-                        max_sq = sq
-                        max_i = i
-                        max_j = j
-                    elif sq.price > max_sq.price:
-                        max_sq = sq
-                        max_i = i
-                        max_j = j
-        return max_sq, max_i, max_j
+        """
+        Assume an individual will buy a house within a certain bound of their price point, i.e. 20 percent. Index this
+        range of keys from the AVL and pull out the last one, which maximizes the value of the houses. If this index is
+        invalid, return None, -1, -1
+        :param person: person to search avl for available housing
+        :return: grid square that maximizes value or None, along with locations
+        """
+        valid_homes = self.tree[person.price_point*.8:person.price_point*1.2]
+        try:
+            last = self.tree[list(valid_homes.keys())[-1]]
+            r, c = last.location[0], last.location[1]
+        except IndexError as _:
+            last = None
+            r, c = -1, -1
+        return last, r, c
 
 
 class GridSquare:
     """ A class to represent a single square in the simulation Grid
     A grid has a total number of houses, a number of occupied houses, and a list of houses. The grid-square also
-    contains a list of pointers to every Person that lives in its square.
+    contains a list of pointers to every Person that lives in its square. Each gridsquare also contains a pointer to
+    the overall parent grid (this is added for access to the AVL)
     """
 
-    def __init__(self, r, c, total_houses, occupied_houses, crime, education, business, freeway):
+    def __init__(self, r, c, total_houses, occupied_houses, crime, education, business, freeway, grid):
         self.total_houses = total_houses
         self.occupied_houses = occupied_houses
         self.price = self.sample_monthly_total_costs()
@@ -131,6 +167,10 @@ class GridSquare:
         self.business = business
         self.freeway = freeway
         self.threads: List[Person] = []
+        self.location = (c, r)
+        self.grid: Grid = grid
+        self.key = -1
+        self.in_tree = False
 
     """ Increment and decrement occupied houses """
 
@@ -138,6 +178,9 @@ class GridSquare:
         if self.occupied_houses < self.total_houses:
             self.occupied_houses += 1
             self.threads.append(thread)
+            # If we have reached grid capacity, it should no longer be in the tree
+            if self.occupied_houses == self.total_houses:
+                self.grid.remove_gs_from_tree(self)
             return "Moved in to a house"
         else:
             return "Could not move in to a house"
@@ -146,6 +189,9 @@ class GridSquare:
         if self.occupied_houses > 0:
             self.occupied_houses -= 1
             self.threads.remove(thread)
+            # if a house has become available and we're not already in the tree, we should be added to it
+            if not self.in_tree:
+                self.grid.add_gs_to_tree(self)
             return "Removed one occupied house"
         else:
             return "Could not move out of occupied house"
@@ -213,6 +259,4 @@ class GridSquare:
 if __name__ == "__main__":
     my_grid = Grid(8, 8)
     print(my_grid.grid)
-    for row in my_grid.grid:
-        for col in row:
-            print(col.get_price())
+    print(len(my_grid.tree))
