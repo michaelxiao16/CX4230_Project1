@@ -99,7 +99,7 @@ def initialize_persons(num_threads=20000):
         gl.threads[ii].next_event = None
         gl.threads[ii].start()
     ts = sorted(gl.threads, key=lambda x: x.income)
-    for help_i in range(120):
+    for help_i in range(int(NUM_THREADS * 0.12)):
         ts[help_i].price_point += 600
 
 
