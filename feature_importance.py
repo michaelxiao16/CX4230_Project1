@@ -32,5 +32,10 @@ def main():
     return features, coeffs, sorted_features
 
 
+def get_feature_vector():
+    _, coeffs, _ = main()
+    return sorted(coeffs)
+
+
 if __name__ == '__main__':
     print(main())

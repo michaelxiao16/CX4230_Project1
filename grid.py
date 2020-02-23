@@ -4,6 +4,7 @@ import numpy as np
 from random import random, randint
 from person import Person
 from bintrees import AVLTree
+from feature_importance import get_feature_vector
 
 
 def get_unique_key(gs, tree: AVLTree):
@@ -39,6 +40,7 @@ class Grid:
         self.education_centers = []
         self.crime_centers = []
         self.tree = AVLTree()
+        self.feature_coeffs = get_feature_vector()
         for row in self.grid:
             for gs in row:
                 self.add_gs_to_tree(gs)
@@ -119,6 +121,21 @@ class Grid:
         self.make_education_center(education_level)
         self.make_businesses(business_levels, business_locations)
         return
+
+    def update_grid_prices(self):
+        from main import monthly_cost_data
+        sqs = []
+        for row in self.grid:
+            for gs in row:
+                feature_vec = gs.get_value_score()
+                score = feature_vec @ self.feature_coeffs
+                sqs.append((score, gs))
+        sqs: List[(int, GridSquare)] = sorted(sqs, key=lambda x: x[0])
+        total = len(sqs)
+        for pair in monthly_cost_data:
+            num = round(pair[1] * total)
+            for _ in range(num):
+                sqs.pop(0)[1].set_price(pair[0])
 
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
 
@@ -250,6 +267,9 @@ class GridSquare:
     def set_crime(self, boolean):
         self.crime = boolean
 
+    def set_price(self, price):
+        self.price = price
+
     def get_average_income(self):
         """
         For every person living in this grid square, sum up their income and return the average. Mainly for use
@@ -277,3 +297,4 @@ if __name__ == "__main__":
     my_grid = Grid(8, 8)
     print(my_grid.grid)
     print(len(my_grid.tree))
+    my_grid.update_grid_prices()
