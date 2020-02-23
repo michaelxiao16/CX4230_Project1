@@ -34,10 +34,11 @@ def animate(i, *fargs):
     for education in grid.get_education_centers():
         r, c = education
         ax.plot([r], [c], marker="s", markersize=2, color="green")
-    for row, column in zip(grid.get_num_rows, grid.get_num_cols):
-        grid_square = grid.get_grid_square(row, column)
-        occ_houses = grid_square.get_occupied_houses()
-        ax.text(row, col, str(occ_houses), color="yellow", fontsize=12)
+    for row in range(grid.get_num_rows()):
+        for column in range(grid.get_num_cols()):
+            grid_square = grid.get_grid_square(row, column)
+            occ_houses = grid_square.get_occupied_houses()
+            ax.text(row+0.15, column-0.15, str(occ_houses), color="yellow", fontsize=8)
 
 
     plt.show()
