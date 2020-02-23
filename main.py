@@ -210,4 +210,4 @@ if __name__ == "__main__":
     print(poor_people)
     print(np.average(poor_people))
     print(len(poor_people))
-    grid_view.main(graph_data)
+    grid_view.main(graph_data, gl.grid)

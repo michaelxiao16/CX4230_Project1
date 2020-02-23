@@ -94,7 +94,7 @@ class Grid:
             row, column = location
             business = self.get_grid_square(row, column)
             business.set_business(level)
-            self.businesses.append(business)
+            self.businesses.append(business.get_location())
 
     def make_education_center(self, education_level):
         """ Create a business in the following square """
@@ -172,6 +172,8 @@ class GridSquare:
     """
 
     def __init__(self, r, c, total_houses, occupied_houses, crime, education, business, freeway, grid):
+        self.row = r
+        self.column = c
         self.total_houses = total_houses
         self.occupied_houses = occupied_houses
         self.price = self.sample_monthly_total_costs()
@@ -210,6 +212,8 @@ class GridSquare:
             return "Could not move out of occupied house"
 
     """ GRID SQUARE GETTERS -----------------------------------------------------------------------------------------"""
+    def get_location(self):
+         return (self.row, self.column)
 
     def get_total_houses(self):
         return self.total_houses

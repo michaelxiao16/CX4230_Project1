@@ -7,13 +7,13 @@ from matplotlib import colors
 import numpy as np
 
 
-def main(data):
+def main(data, grid):
     fig, ax = plt.subplots()
     cmap = colors.ListedColormap(['0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '0.95'])
     # Salary ranges for coloring squares
     bounds = [-1, 1, 10001, 20001, 30001, 40001, 50001, 75001, 150001, 200001, 300001]
     norm = colors.BoundaryNorm(bounds, cmap.N)
-    ani = animation.FuncAnimation(fig, animate, len(data), fargs=(data, ax, cmap, norm), interval=100, blit=False)
+    ani = animation.FuncAnimation(fig, animate, len(data), fargs=(data, ax, cmap, norm, grid), interval=100, blit=False)
     ani.save(os.path.join('out', 'chart.mp4'))
     plt.show()
 
@@ -23,8 +23,12 @@ def animate(i, *fargs):
     ax = fargs[1]
     cmap = fargs[2]
     norm = fargs[3]
+    grid = fargs[4]
     ax.imshow(fargs[0][i], cmap=cmap, norm=norm)
     ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
     ax.set_xticks(np.arange(-0.5, GRID_COLS, 1))
     ax.set_yticks(np.arange(-0.5, GRID_ROWS, 1))
+    for business in grid.get_businesses():
+        ax.plot(business, marker="s")
+
     plt.show()
