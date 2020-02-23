@@ -65,8 +65,6 @@ class Grid:
         freeway: GridSquare = []
         # column freeway
         if orientation.equals("column"):
-            # freeway_length = rand.randint(num_rows - 1)
-            # freeway_col = rand.randint(num_cols - 1)
             freeway_length = num_rows
             freeway_col = 0
             for i in range(freeway_length):
@@ -96,13 +94,13 @@ class Grid:
             business.set_business(level)
             self.businesses.append(business.get_location())
 
-    def make_education_center(self, education_level):
+    def make_education_center(self, education_levels, education_centers):
         """ Create a business in the following square """
-        row = randint(0, self.get_num_rows() - 1)
-        column = randint(0, self.get_num_cols() - 1)
-        education = self.get_grid_square(row, column)
-        education.set_education(education_level)
-        self.education_centers.append(education)
+        for level, location in zip(education_levels, education_centers):
+            row, column = location
+            education = self.get_grid_square(row, column)
+            education.set_education(level)
+            self.education_centers.append(education.get_location())
 
     def create_grid(self, rows, columns):
         grid = np.array([[GridSquare(r, c,
@@ -113,10 +111,11 @@ class Grid:
 
     def grid_setup(self):
 
-        education_level = random()
+        education_level = [1, 0.5, 0.2]
+        education_centers = [(5, 5), (6, 6), (7, 7)]
         business_levels = [1, 0.5, 0.2]
         business_locations = [(0, 0), (1, 2), (3,4)]
-        self.make_education_center(education_level)
+        self.make_education_center(education_level, education_centers)
         self.make_businesses(business_levels, business_locations)
         return
 
