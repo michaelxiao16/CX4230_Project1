@@ -66,7 +66,7 @@ class Person(Thread):
         sq.moveout(self)
         # Create new move in event to add to the future event list
         # TODO: Looks like the event is not being scheduled according to probability distribution. Needs to be fixed
-        event = Event(self.gl.clock + random.randint(0, 15), self.pid, self.move_in_event, True, 1)
+        event = Event(self.gl.clock + random.randint(0, 3), self.pid, self.move_in_event, True, 1)
         print("moved out of " + str(loc[0]) + ' ' + str(loc[1]))
         self.schedule_event(event)
 

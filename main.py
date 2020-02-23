@@ -13,8 +13,8 @@ from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_t
 
 GRID_ROWS = 10
 GRID_COLS = 10
-NUM_RUNS = 12000
-NUM_THREADS = GRID_COLS * GRID_ROWS * 20
+NUM_RUNS = 5000
+NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
 
 class Globals:
@@ -98,9 +98,12 @@ def initialize_persons(num_threads=20000):
             schedule_event(Event(gl.clock + random.randint(0, 2), ii, Person.move_in_event, True, 1))
         gl.threads[ii].next_event = None
         gl.threads[ii].start()
+    ts = sorted(gl.threads, key=lambda x: x.income)
+    for help_i in range(120):
+        ts[help_i].price_point += 600
 
 
-def sim_snapshot(counter_i, frequency=500):
+def sim_snapshot(counter_i, frequency=100):
     """
     Take a data snapshot of the simulation if the mod of the counter and the frequency is zero
     :param counter_i: current iteration of simulation run
@@ -128,13 +131,13 @@ def get_average_disparity():
     for iii in range(max_row):
         for jjj in range(max_col):
             neighbors: List[GridSquare] = []
-            if iii > 0:
+            if iii > 0 and len(gl.grid.get_grid_square(iii-1, jjj).threads) != 0:
                 neighbors.append(gl.grid.get_grid_square(iii - 1, jjj))
-            if jjj > 0:
+            if jjj > 0 and len(gl.grid.get_grid_square(iii, jjj-1).threads) != 0:
                 neighbors.append(gl.grid.get_grid_square(iii, jjj - 1))
-            if iii < max_row - 1:
+            if iii < max_row - 1 and len(gl.grid.get_grid_square(iii+1, jjj).threads) != 0:
                 neighbors.append(gl.grid.get_grid_square(iii + 1, jjj))
-            if jjj < max_col - 1:
+            if jjj < max_col - 1 and len(gl.grid.get_grid_square(iii, jjj + 1).threads) != 0:
                 neighbors.append(gl.grid.get_grid_square(iii, jjj + 1))
 
             sq_d: GridSquare = gl.grid.get_grid_square(iii, jjj)
@@ -189,4 +192,22 @@ if __name__ == "__main__":
         counter += 1
     # print the ending average disparity
     print(get_average_disparity())
+    sq_prices = []
+    for row in gl.grid.grid:
+        for sq in row:
+            a_sq: GridSquare = sq
+            if len(a_sq.threads) == 0:
+                print(a_sq.location)
+                sq_prices.append(a_sq.get_price())
+    print(sq_prices)
+    print(np.average(sq_prices))
+    poor_people = []
+    for person in gl.threads:
+        if person.home_location[0] == -1:
+            h, _, _ = gl.grid.find_appropriate_housing(person)
+            if h is None:
+                poor_people.append(person.get_price_point())
+    print(poor_people)
+    print(np.average(poor_people))
+    print(len(poor_people))
     grid_view.main(graph_data)

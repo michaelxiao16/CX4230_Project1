@@ -141,7 +141,7 @@ class Grid:
         :param person: person to search avl for available housing
         :return: grid square that maximizes value or None, along with locations
         """
-        valid_homes = self.tree[person.price_point*.8:person.price_point*1.2]
+        valid_homes = self.tree[0:person.price_point*1.2]
         try:
             last = self.tree[list(valid_homes.keys())[-1]]
             r, c = last.location[0], last.location[1]

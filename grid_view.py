@@ -9,9 +9,9 @@ import numpy as np
 
 def main(data):
     fig, ax = plt.subplots()
-    cmap = colors.ListedColormap(['0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9'])
+    cmap = colors.ListedColormap(['0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '0.95'])
     # Salary ranges for coloring squares
-    bounds = [0, 10001, 20001, 30001, 40001, 50001, 60001, 75001, 100001, 300001]
+    bounds = [-1, 1, 10001, 20001, 30001, 40001, 50001, 75001, 150001, 200001, 300001]
     norm = colors.BoundaryNorm(bounds, cmap.N)
     ani = animation.FuncAnimation(fig, animate, len(data), fargs=(data, ax, cmap, norm), interval=100, blit=False)
     ani.save(os.path.join('out', 'chart.mp4'))
