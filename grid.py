@@ -67,8 +67,6 @@ class Grid:
         freeway: GridSquare = []
         # column freeway
         if orientation.equals("column"):
-            # freeway_length = rand.randint(num_rows - 1)
-            # freeway_col = rand.randint(num_cols - 1)
             freeway_length = num_rows
             freeway_col = 0
             for i in range(freeway_length):
@@ -98,13 +96,13 @@ class Grid:
             business.set_business(level)
             self.businesses.append(business.get_location())
 
-    def make_education_center(self, education_level):
+    def make_education_center(self, education_levels, education_centers):
         """ Create a business in the following square """
-        row = randint(0, self.get_num_rows() - 1)
-        column = randint(0, self.get_num_cols() - 1)
-        education = self.get_grid_square(row, column)
-        education.set_education(education_level)
-        self.education_centers.append(education)
+        for level, location in zip(education_levels, education_centers):
+            row, column = location
+            education = self.get_grid_square(row, column)
+            education.set_education(level)
+            self.education_centers.append(education.get_location())
 
     def create_grid(self, rows, columns):
         grid = np.array([[GridSquare(r, c,
@@ -115,11 +113,14 @@ class Grid:
 
     def grid_setup(self):
 
-        education_level = random()
-        business_levels = [1, 0.5, 0.2]
-        business_locations = [(0, 0), (1, 2), (3,4)]
-        self.make_education_center(education_level)
+        # for e in range(randint(0,4)):
+        business_levels = [0.9]
+        business_locations = [(1, 1)]
         self.make_businesses(business_levels, business_locations)
+        education_level = [0.8]
+        education_centers = [(5, 5)]
+        self.make_education_center(education_level, education_centers)
+
         return
 
     def update_grid_prices(self):
@@ -252,6 +253,30 @@ class GridSquare:
 
     def get_freeway(self):
         return self.freeway
+
+    def get_value_score(self):
+        my_grid = self.grid
+        # Poor people, crime, distance to business center, education level, distance to nearest highway
+        total_dist = 0
+        for business in my_grid.get_businesses():
+            total_dist += np.sum(np.abs(business - (self.row, self.column)), axis=1)
+        # Calculate average distance
+        avg_dist = total_dist / len(my_grid.get_businesses())
+        # Normalize avg dist
+        norm_dist = avg_dist / (my_grid.get_num_rows() + my_grid.get_num_cols)
+        dist_business = norm_dist
+
+        total_education = 0
+        for education in my_grid.get_education_centers():
+            total_education += np.sum(np.abs(education - (self.row, self.column)), axis=1)
+        # Calculate average distance
+        avg_education = total_education / len(my_grid.get_education_centers())
+        # Normalize avg dist
+        norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols)
+        education_level = norm_education
+        value = [0, 0, dist_business, education_level, 0]
+        return np.array(value)
+
 
     """ GRID SQUARE SETTERS -----------------------------------------------------------------------------------------"""
 

@@ -29,6 +29,11 @@ def animate(i, *fargs):
     ax.set_xticks(np.arange(-0.5, GRID_COLS, 1))
     ax.set_yticks(np.arange(-0.5, GRID_ROWS, 1))
     for business in grid.get_businesses():
-        ax.plot(business, marker="s")
+        r, c = business
+        ax.plot([r], [c], marker="s", markersize=2, color="red")
+    for education in grid.get_education_centers():
+        r, c = education
+        ax.plot([r], [c], marker="s", markersize=2, color="green")
+
 
     plt.show()
