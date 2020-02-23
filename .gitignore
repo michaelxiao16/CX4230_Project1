@@ -6,3 +6,4 @@ venv
 __pycache__/*
 ffmpeg/*
 ffmpeg
+bintrees/__pycache__

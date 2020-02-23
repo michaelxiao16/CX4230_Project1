@@ -6,7 +6,7 @@ from person import Person
 from bintrees import AVLTree
 
 
-def get_unique_key(gs, tree:AVLTree):
+def get_unique_key(gs, tree: AVLTree):
     """
     Many gridsquares will have the same price, so it's important to generate a unique key since the AVL library doesn't
     allow for duplicate keys
