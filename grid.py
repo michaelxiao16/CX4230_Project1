@@ -118,7 +118,7 @@ class Grid:
         business_locations = [(1, 1)]
         self.make_businesses(business_levels, business_locations)
         education_level = [0.8]
-        education_centers = [(5, 5)]
+        education_centers = [(1, 5)]
         self.make_education_center(education_level, education_centers)
 
         return
@@ -133,11 +133,19 @@ class Grid:
                 sqs.append((score, gs))
         sqs: List[(int, GridSquare)] = sorted(sqs, key=lambda x: x[0])
         total = len(sqs)
+        monthly_cost_non_cum = []
+        for i in range(len(monthly_cost_data) -1, -1, -1):
+            if i != 0:
+                monthly_cost_non_cum.insert(0, (monthly_cost_data[i][0], monthly_cost_data[i][1] - monthly_cost_data[i-1][1]))
+            else:
+                monthly_cost_non_cum.insert(0, (monthly_cost_data[i][0], monthly_cost_data[i][1]))
         for pair in monthly_cost_data:
-            num = round(pair[1] * total)
+            num = int(np.ceil(pair[1] * total))
             for _ in range(num):
-                sqs.pop(0)[1].set_price(pair[0])
-
+                try:
+                    sqs.pop(0)[1].set_price(pair[0])
+                except IndexError as _:
+                    continue
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
 
     def get_size(self):
@@ -259,20 +267,20 @@ class GridSquare:
         # Poor people, crime, distance to business center, education level, distance to nearest highway
         total_dist = 0
         for business in my_grid.get_businesses():
-            total_dist += np.sum(np.abs(business - (self.row, self.column)), axis=1)
+            total_dist += np.sum(np.abs(np.array(business) - np.array((self.row, self.column))))
         # Calculate average distance
         avg_dist = total_dist / len(my_grid.get_businesses())
         # Normalize avg dist
-        norm_dist = avg_dist / (my_grid.get_num_rows() + my_grid.get_num_cols)
+        norm_dist = avg_dist / (my_grid.get_num_rows() + my_grid.get_num_cols())
         dist_business = norm_dist
 
         total_education = 0
         for education in my_grid.get_education_centers():
-            total_education += np.sum(np.abs(education - (self.row, self.column)), axis=1)
+            total_education += np.sum(np.abs(np.array(education) - np.array((self.row, self.column))))
         # Calculate average distance
         avg_education = total_education / len(my_grid.get_education_centers())
         # Normalize avg dist
-        norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols)
+        norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols())
         education_level = norm_education
         value = [0, 0, dist_business, education_level, 0]
         return np.array(value)

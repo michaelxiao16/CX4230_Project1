@@ -13,7 +13,7 @@ from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_t
 
 GRID_ROWS = 10
 GRID_COLS = 10
-NUM_RUNS = 5000
+NUM_RUNS = 10000
 NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
 
@@ -159,6 +159,8 @@ if __name__ == "__main__":
     print(get_average_disparity())
     counter = 0
     while counter < NUM_RUNS:
+        if counter % 50 == 0:
+            gl.grid.update_grid_prices()
         # Attempt to record a snapshot of the simulation
         sim_snapshot(counter)
         try:
