@@ -36,12 +36,14 @@ class Grid:
 
         self.businesses = []
         self.freeways = []
-        self.education = []
+        self.education_centers = []
         self.crime_centers = []
         self.tree = AVLTree()
         for row in self.grid:
             for gs in row:
                 self.add_gs_to_tree(gs)
+
+        self.grid_setup()
 
     """WRAPPER METHODS FOR CONTROLLING ACCESS TO THE TREE OF AVAILABLE GRIDSQUARES"""
     def add_gs_to_tree(self, gs):
@@ -55,7 +57,7 @@ class Grid:
 
     """ GRID FEATURES -----------------------------------------------------------------------------------------------"""
 
-    def make_freeway(self, rand, num_freeways):
+    def make_freeway(self, num_freeways):
         num_rows = self.get_num_rows()
         num_cols = self.get_num_cols()
         orientation = random.choice(["row", "column"])
@@ -85,21 +87,38 @@ class Grid:
         self.freeways.append(freeway)
         return
 
-    def make_businesses(self, rand, num_biz):
+    def make_businesses(self, business_levels, business_locations):
         """ Create a business in the following square """
-        row = rand.randint(self.grid.get_num_rows())
-        column = rand.randint(self.grid.get_num_cols())
-        business = self.get_grid_square(row, column)
-        business.set_business(True)
-        self.businesses.append(business)
 
-    def make_education(self, rand, num_education):
+        for level, location in zip(business_levels, business_locations):
+            row, column = location
+            business = self.get_grid_square(row, column)
+            business.set_business(level)
+            self.businesses.append(business)
+
+    def make_education_center(self, education_level):
         """ Create a business in the following square """
-        row = rand.randint(self.grid.get_num_rows())
-        column = rand.randint(self.grid.get_num_cols())
+        row = randint(0, self.get_num_rows() - 1)
+        column = randint(0, self.get_num_cols() - 1)
         education = self.get_grid_square(row, column)
-        education.set_education(True)
-        self.education.append(education)
+        education.set_education(education_level)
+        self.education_centers.append(education)
+
+    def create_grid(self, rows, columns):
+        grid = np.array([[GridSquare(r, c,
+                                     total_houses=10, occupied_houses=0, crime=[], education=[], business=[],
+                                     freeway=True, grid=self)
+                          for r in range(rows)] for c in range(columns)])
+        return grid
+
+    def grid_setup(self):
+
+        education_level = random()
+        business_levels = [1, 0.5, 0.2]
+        business_locations = [(0, 0), (1, 2), (3,4)]
+        self.make_education_center(education_level)
+        self.make_businesses(business_levels, business_locations)
+        return
 
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
 
@@ -121,15 +140,9 @@ class Grid:
     def get_freeways(self):
         return self.freeways
 
-    def get_education(self):
-        return self.education
+    def get_education_centers(self):
+        return self.education_centers
 
-    def create_grid(self, rows, columns):
-        grid = np.array([[GridSquare(r, c,
-                                     total_houses=10, occupied_houses=0, crime=10, education=10, business=True,
-                                     freeway=True, grid=self)
-                          for r in range(rows)] for c in range(columns)])
-        return grid
 
     from person import Person
 
@@ -221,11 +234,11 @@ class GridSquare:
 
     """ GRID SQUARE SETTERS -----------------------------------------------------------------------------------------"""
 
-    def set_education(self, boolean):
-        self.education = boolean
+    def set_education(self, education_level):
+        self.education = education_level
 
-    def set_business(self, boolean):
-        self.business = boolean
+    def set_business(self, business_level):
+        self.business = business_level
 
     def set_freeway(self, boolean):
         self.freeway = boolean
