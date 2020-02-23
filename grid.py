@@ -87,13 +87,14 @@ class Grid:
         self.freeways.append(freeway)
         return
 
-    def make_businesses(self, num_biz):
+    def make_businesses(self, business_levels, business_locations):
         """ Create a business in the following square """
-        row = randint(0, self.get_num_rows() - 1)
-        column = randint(0, self.get_num_cols() - 1)
-        business = self.get_grid_square(row, column)
-        business.set_business(True)
-        self.businesses.append(business)
+
+        for level, location in zip(business_levels, business_locations):
+            row, column = location
+            business = self.get_grid_square(row, column)
+            business.set_business(level)
+            self.businesses.append(business)
 
     def make_education_center(self, education_level):
         """ Create a business in the following square """
@@ -113,7 +114,10 @@ class Grid:
     def grid_setup(self):
 
         education_level = random()
+        business_levels = [1, 0.5, 0.2]
+        business_locations = [(0, 0), (1, 2), (3,4)]
         self.make_education_center(education_level)
+        self.make_businesses(business_levels, business_locations)
         return
 
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
@@ -233,8 +237,8 @@ class GridSquare:
     def set_education(self, education_level):
         self.education = education_level
 
-    def set_business(self, boolean):
-        self.business = boolean
+    def set_business(self, business_level):
+        self.business = business_level
 
     def set_freeway(self, boolean):
         self.freeway = boolean
