@@ -210,4 +210,5 @@ if __name__ == "__main__":
     print(poor_people)
     print(np.average(poor_people))
     print(len(poor_people))
+    print(gl.clock)
     grid_view.main(graph_data, gl.grid)
