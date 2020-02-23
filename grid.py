@@ -111,12 +111,14 @@ class Grid:
 
     def grid_setup(self):
 
-        education_level = [1, 0.5, 0.2]
-        education_centers = [(5, 5), (6, 6), (7, 7)]
-        business_levels = [1, 0.5, 0.2]
-        business_locations = [(0, 0), (1, 2), (3,4)]
-        self.make_education_center(education_level, education_centers)
+        # for e in range(randint(0,4)):
+        business_levels = [0.9]
+        business_locations = [(1, 1)]
         self.make_businesses(business_levels, business_locations)
+        education_level = [0.8]
+        education_centers = [(5, 5)]
+        self.make_education_center(education_level, education_centers)
+
         return
 
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
@@ -235,6 +237,30 @@ class GridSquare:
     def get_freeway(self):
         return self.freeway
 
+    def get_value_score(self):
+        my_grid = self.grid
+        # Poor people, crime, distance to business center, education level, distance to nearest highway
+        total_dist = 0
+        for business in my_grid.get_businesses():
+            total_dist += np.sum(np.abs(business - (self.row, self.column)), axis=1)
+        # Calculate average distance
+        avg_dist = total_dist / len(my_grid.get_businesses())
+        # Normalize avg dist
+        norm_dist = avg_dist / (my_grid.get_num_rows() + my_grid.get_num_cols)
+        dist_business = norm_dist
+
+        total_education = 0
+        for education in my_grid.get_education_centers():
+            total_education += np.sum(np.abs(education - (self.row, self.column)), axis=1)
+        # Calculate average distance
+        avg_education = total_education / len(my_grid.get_education_centers())
+        # Normalize avg dist
+        norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols)
+        education_level = norm_education
+        value = [0, 0, dist_business, education_level, 0]
+        return np.array(value)
+
+
     """ GRID SQUARE SETTERS -----------------------------------------------------------------------------------------"""
 
     def set_education(self, education_level):
@@ -276,3 +302,6 @@ if __name__ == "__main__":
     my_grid = Grid(8, 8)
     print(my_grid.grid)
     print(len(my_grid.tree))
+    test_grid_square = my_grid.get_grid_square(3, 4)
+    test_grid_square.get_value_score()
+
