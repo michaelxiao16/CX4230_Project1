@@ -276,6 +276,8 @@ class GridSquare:
     def get_value_score(self):
         my_grid = self.grid
         # Poor people, crime, distance to business center, education level, distance to nearest highway
+
+        # Distance to business center score
         total_dist = 0
         for business in my_grid.get_businesses():
             total_dist += np.sum(np.abs(np.array(business) - np.array((self.row, self.column))))
@@ -285,6 +287,7 @@ class GridSquare:
         norm_dist = avg_dist / (my_grid.get_num_rows() + my_grid.get_num_cols())
         dist_business = norm_dist
 
+        # Education score
         total_education = 0
         for education in my_grid.get_education_centers():
             total_education += np.sum(np.abs(np.array(education) - np.array((self.row, self.column))))
@@ -293,7 +296,22 @@ class GridSquare:
         # Normalize avg dist
         norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols())
         education_level = norm_education
-        value = [0, 0, dist_business, education_level, 0]
+
+
+        total_freeway_dist = 0
+        norm_freeway_dist = 0
+        for freeway in my_grid.get_freeways():
+            for freeway_square in freeway:
+                total_freeway_dist += np.sum(np.abs(np.array(freeway_square) - np.array((self.row, self.column))))
+            # Calculate average distance
+            avg_freeway_dist = total_freeway_dist / len(freeway)
+            # Normalize avg dist
+            norm_freeway_dist = avg_freeway_dist / len(freeway)
+        dist_freeways = norm_freeway_dist
+
+
+        value = [0, 0, dist_business, education_level, dist_freeways]
+
         return np.array(value)
 
 
