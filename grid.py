@@ -67,11 +67,11 @@ class Grid:
 
         orientation = choice(["row", "column"])
         # list of gridsquares in the freeway
-        freeway: GridSquare = []
+        freeway: List[GridSquare] = []
         # column freeway
         if orientation == "column":
             freeway_length = num_rows
-            freeway_col = f_business[0]
+            freeway_col = f_business[1]
             for i in range(freeway_length):
                 freeway_square = self.get_grid_square(i, freeway_col)
                 freeway_square.set_freeway(True)
@@ -79,9 +79,9 @@ class Grid:
         # row freeway
         else:
             freeway_length = num_cols
-            freeway_row = f_business[1]
+            freeway_row = f_business[0]
             for i in range(freeway_length):
-                freeway_square = self.get_grid_square(i, freeway_row)
+                freeway_square = self.get_grid_square(freeway_row, i)
                 freeway_square.set_freeway(True)
                 freeway.append(freeway_square.get_location())
 
@@ -112,19 +112,11 @@ class Grid:
                           for c in range(columns)] for r in range(rows)])
         return grid
 
-    def grid_setup(self):
-
-        # for e in range(randint(0,4)):
-        business_levels = [0.9]
-        business_locations = [(2, 1)]
+    def grid_setup(self, business_levels=(0.9,), business_locations=((2, 1),), education_level=(0.8,),
+                   education_centers=((1, 5),), ):
         self.make_businesses(business_levels, business_locations)
-        education_level = [0.8]
-        education_centers = [(1, 5)]
         self.make_education_center(education_level, education_centers)
-
         self.make_freeway(1)
-
-        return
 
     def update_grid_prices(self):
         from main import monthly_cost_data
@@ -297,7 +289,6 @@ class GridSquare:
         norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols())
         education_level = norm_education
 
-
         total_freeway_dist = 0
         norm_freeway_dist = 0
         for freeway in my_grid.get_freeways():
@@ -306,11 +297,16 @@ class GridSquare:
             # Calculate average distance
             avg_freeway_dist = total_freeway_dist / len(freeway)
             # Normalize avg dist
-            norm_freeway_dist = avg_freeway_dist / len(freeway)
+            norm_freeway_dist = avg_freeway_dist / (my_grid.get_num_cols() + my_grid.get_num_rows())
         dist_freeways = norm_freeway_dist
 
+        lstat_score = 0.
+        for t in self.threads:
+            if t.income < 20000:
+                lstat_score += 1
+        l_stat_norm = lstat_score / 10.
 
-        value = [0, 0, dist_business, education_level, dist_freeways]
+        value = [l_stat_norm, 0, dist_business, education_level, dist_freeways]
 
         return np.array(value)
 

@@ -7,6 +7,12 @@ from matplotlib import colors
 import numpy as np
 
 
+def plot_warm_up(disparities):
+    x_data = [pair[0] for pair in disparities]
+    y_data = [pair[1] for pair in disparities]
+    plt.plot(x_data, y_data)
+    plt.show()
+
 def main(data, grid):
     data_num_people = np.array([pair[1] for pair in data])
     data_income = np.array([pair[0] for pair in data])
@@ -45,7 +51,7 @@ def animate(i, *fargs):
     for freeway in grid.get_freeways():
         for freeway_square in freeway:
             r, c = freeway_square
-            ax.plot([r - 0.15], [c - 0.15], marker="o", markersize=2, color="cyan")
+            ax.plot([c - 0.15], [r - 0.15], marker="o", markersize=2, color="cyan")
     for row in range(grid.get_num_rows()):
         for column in range(grid.get_num_cols()):
             occ_houses = int(data_num_people[i][row, column])

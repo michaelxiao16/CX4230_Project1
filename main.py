@@ -11,8 +11,8 @@ from grid import Grid
 from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob, \
     get_percent_monthly_income
 
-GRID_ROWS = 20
-GRID_COLS = 20
+GRID_ROWS = 10
+GRID_COLS = 10
 NUM_RUNS = 20000
 NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
@@ -148,6 +148,7 @@ def get_average_disparity():
             agg_local = 0
             for n in neighbors:
                 agg_local += np.abs((sq_d.get_average_income() - n.get_average_income()))
+            agg_local /= len(neighbors)
             aggregate += agg_local
             count += 1
     return aggregate/count
@@ -162,11 +163,15 @@ if __name__ == "__main__":
     # print the starting average disparity
     print(get_average_disparity())
     counter = 0
+    disparities = [(0, get_average_disparity())]
     while counter < NUM_RUNS:
-        if counter % 50 == 0:
+        if counter % 100 == 0:
             gl.grid.update_grid_prices()
+        # if the clock has gone up a year, get a disparity reading
+        if disparities[-1][0] != gl.clock:
+            disparities += [(gl.clock, get_average_disparity())]
         # Attempt to record a snapshot of the simulation
-        sim_snapshot(counter)
+        # sim_snapshot(counter)
         try:
             event: Event or None = heappop(gl.fel)
         except IndexError as e:
@@ -198,23 +203,7 @@ if __name__ == "__main__":
         counter += 1
     # print the ending average disparity
     print(get_average_disparity())
-    sq_prices = []
-    for row in gl.grid.grid:
-        for sq in row:
-            a_sq: GridSquare = sq
-            if len(a_sq.threads) == 0:
-                print(a_sq.location)
-                sq_prices.append(a_sq.get_price())
-    print(sq_prices)
-    print(np.average(sq_prices))
-    poor_people = []
-    for person in gl.threads:
-        if person.home_location[0] == -1:
-            h, _, _ = gl.grid.find_appropriate_housing(person)
-            if h is None:
-                poor_people.append(person.get_price_point())
-    print(poor_people)
-    print(np.average(poor_people))
-    print(len(poor_people))
     print(gl.clock)
-    grid_view.main(graph_data, gl.grid)
+    print(disparities)
+    grid_view.plot_warm_up(disparities)
+    # grid_view.main(graph_data, gl.grid)
