@@ -26,7 +26,8 @@ def get_unique_key(gs, tree: AVLTree):
 class Grid:
     """ A class to represent simulation Grid """
 
-    def __init__(self, rows, columns):
+    def __init__(self, rows, columns, business_levels=(0.9,), business_locations=((2, 1),), education_level=(0.8,),
+                 education_centers=((1, 5),), num_freeways=1):
         """
         Initialize grid. For every grid square, add it to the AVL, since when the grid is initialized, there are no
         people living in it, meaning every grid square should be in the tree of available units.
@@ -45,9 +46,11 @@ class Grid:
             for gs in row:
                 self.add_gs_to_tree(gs)
 
-        self.grid_setup()
+        self.grid_setup(business_levels=business_levels, business_locations=business_locations,
+                        education_level=education_level, education_centers=education_centers, num_freeways=num_freeways)
 
     """WRAPPER METHODS FOR CONTROLLING ACCESS TO THE TREE OF AVAILABLE GRIDSQUARES"""
+
     def add_gs_to_tree(self, gs):
         k = get_unique_key(gs, self.tree)
         self.tree[k] = gs
@@ -113,10 +116,10 @@ class Grid:
         return grid
 
     def grid_setup(self, business_levels=(0.9,), business_locations=((2, 1),), education_level=(0.8,),
-                   education_centers=((1, 5),), ):
+                   education_centers=((1, 5),), num_freeways=1):
         self.make_businesses(business_levels, business_locations)
         self.make_education_center(education_level, education_centers)
-        self.make_freeway(1)
+        self.make_freeway(num_freeways)
 
     def update_grid_prices(self):
         from main import monthly_cost_data
@@ -129,9 +132,10 @@ class Grid:
         sqs: List[(int, GridSquare)] = sorted(sqs, key=lambda x: x[0])
         total = len(sqs)
         monthly_cost_non_cum = []
-        for i in range(len(monthly_cost_data) -1, -1, -1):
+        for i in range(len(monthly_cost_data) - 1, -1, -1):
             if i != 0:
-                monthly_cost_non_cum.insert(0, (monthly_cost_data[i][0], monthly_cost_data[i][1] - monthly_cost_data[i-1][1]))
+                monthly_cost_non_cum.insert(0, (
+                monthly_cost_data[i][0], monthly_cost_data[i][1] - monthly_cost_data[i - 1][1]))
             else:
                 monthly_cost_non_cum.insert(0, (monthly_cost_data[i][0], monthly_cost_data[i][1]))
         a = sum([x[1] for x in monthly_cost_non_cum])
@@ -149,6 +153,7 @@ class Grid:
                     self.add_gs_to_tree(gs)
                 else:
                     gs.in_tree = False
+
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
 
     def get_size(self):
@@ -172,7 +177,6 @@ class Grid:
     def get_education_centers(self):
         return self.education_centers
 
-
     from person import Person
 
     def find_appropriate_housing(self, person: Person):
@@ -183,7 +187,7 @@ class Grid:
         :param person: person to search avl for available housing
         :return: grid square that maximizes value or None, along with locations
         """
-        valid_homes = self.tree[0:person.price_point*1.2]
+        valid_homes = self.tree[0:person.price_point * 1.2]
         try:
             last = self.tree[list(valid_homes.keys())[-1]]
             r, c = last.location[0], last.location[1]
@@ -241,8 +245,9 @@ class GridSquare:
             return "Could not move out of occupied house"
 
     """ GRID SQUARE GETTERS -----------------------------------------------------------------------------------------"""
+
     def get_location(self):
-         return (self.row, self.column)
+        return (self.row, self.column)
 
     def get_total_houses(self):
         return self.total_houses
@@ -309,7 +314,6 @@ class GridSquare:
         value = [l_stat_norm, 0, dist_business, education_level, dist_freeways]
 
         return np.array(value)
-
 
     """ GRID SQUARE SETTERS -----------------------------------------------------------------------------------------"""
 
