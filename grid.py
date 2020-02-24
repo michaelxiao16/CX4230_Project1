@@ -108,17 +108,17 @@ class Grid:
         grid = np.array([[GridSquare(r, c,
                                      total_houses=10, occupied_houses=0, crime=[], education=[], business=[],
                                      freeway=True, grid=self)
-                          for r in range(rows)] for c in range(columns)])
+                          for c in range(columns)] for r in range(rows)])
         return grid
 
     def grid_setup(self):
 
         # for e in range(randint(0,4)):
         business_levels = [0.9]
-        business_locations = [(1, 1)]
+        business_locations = [(0, 0)]
         self.make_businesses(business_levels, business_locations)
         education_level = [0.8]
-        education_centers = [(1, 5)]
+        education_centers = [(19, 19)]
         self.make_education_center(education_level, education_centers)
 
         return
@@ -216,7 +216,7 @@ class GridSquare:
         self.business = business
         self.freeway = freeway
         self.threads: List[Person] = []
-        self.location = (c, r)
+        self.location = (r, c)
         self.grid: Grid = grid
         self.key = -1
         self.in_tree = False

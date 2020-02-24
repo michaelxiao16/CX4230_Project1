@@ -35,7 +35,6 @@ def main():
 def get_feature_vector():
     _, coeffs, _ = main()
     coeffs = sorted(coeffs)
-    coeffs[3] *= -1
     return coeffs
 
 

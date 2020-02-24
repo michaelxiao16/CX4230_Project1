@@ -11,9 +11,9 @@ from grid import Grid
 from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob, \
     get_percent_monthly_income
 
-GRID_ROWS = 10
-GRID_COLS = 10
-NUM_RUNS = 7500
+GRID_ROWS = 20
+GRID_COLS = 20
+NUM_RUNS = 20000
 NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
 
@@ -103,19 +103,23 @@ def initialize_persons(num_threads=20000):
         ts[help_i].price_point += 600
 
 
-def sim_snapshot(counter_i, frequency=100):
+def sim_snapshot(counter_i, frequency=600):
     """
     Take a data snapshot of the simulation if the mod of the counter and the frequency is zero
     :param counter_i: current iteration of simulation run
     :param frequency: how often to take a snapshot
     """
     if counter_i % frequency == 0:
-        arr = np.zeros((GRID_ROWS, GRID_COLS))
+        arr_num_people = np.zeros((GRID_ROWS, GRID_COLS))
+        arr_money = np.zeros((GRID_ROWS, GRID_COLS))
         for person_i in gl.threads:
             if person_i.home_location[0] != -1:
                 loc = person_i.home_location
-                arr[loc[0]][loc[1]] = person_i.income
-        graph_data.append(arr)
+                arr_money[loc[0]][loc[1]] = person_i.income
+        for ri in range(GRID_ROWS):
+            for rj in range(GRID_COLS):
+                arr_num_people[ri, rj] = gl.grid.get_grid_square(ri, rj).get_occupied_houses()
+        graph_data.append((arr_money, arr_num_people))
 
 
 def get_average_disparity():
