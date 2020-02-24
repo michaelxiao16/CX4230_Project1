@@ -1,10 +1,11 @@
+from random import randint, choice
 from typing import List
 
 import numpy as np
-from random import random, randint, choice
-from person import Person
+
 from bintrees import AVLTree
-from feature_importance import get_feature_vector
+from features_pace_safe import return_sorted_coeffs
+from person import Person
 
 
 def get_unique_key(gs, tree: AVLTree):
@@ -26,8 +27,8 @@ def get_unique_key(gs, tree: AVLTree):
 class Grid:
     """ A class to represent simulation Grid """
 
-    def __init__(self, rows, columns, business_levels=(0.9,), business_locations=((2, 1),), education_level=(0.8,),
-                 education_centers=((1, 5),), num_freeways=1):
+    def __init__(self, rows, columns, business_levels=(0.9,), business_locations=((2, 1),), education_level=(0.9,),
+                 education_centers=((1, 5),), crime_levels=(0.9,), crime_centers=(3, 3), num_freeways=1):
         """
         Initialize grid. For every grid square, add it to the AVL, since when the grid is initialized, there are no
         people living in it, meaning every grid square should be in the tree of available units.
@@ -35,19 +36,23 @@ class Grid:
         :param columns:
         """
         self.grid = self.create_grid(columns, rows)
-
         self.businesses = []
         self.freeways = []
+        self.orientation = None
         self.education_centers = []
         self.crime_centers = []
         self.tree = AVLTree()
-        self.feature_coeffs = get_feature_vector()
+        self.feature_coeffs = return_sorted_coeffs()
+        business_levels = [1 for _ in range(len(business_locations))]
+        education_levels = [1 for _ in range(len(education_centers))]
+        crime_levels = [1 for _ in range(len(crime_centers))]
         for row in self.grid:
             for gs in row:
                 self.add_gs_to_tree(gs)
 
         self.grid_setup(business_levels=business_levels, business_locations=business_locations,
-                        education_level=education_level, education_centers=education_centers, num_freeways=num_freeways)
+                        education_level=education_levels, education_centers=education_centers, crime_level=crime_levels,
+                        crime_centers=crime_centers, num_freeways=num_freeways)
 
     """WRAPPER METHODS FOR CONTROLLING ACCESS TO THE TREE OF AVAILABLE GRIDSQUARES"""
 
@@ -69,6 +74,7 @@ class Grid:
         f_business = choice(businesses)
 
         orientation = choice(["row", "column"])
+        self.orientation = orientation
         # list of gridsquares in the freeway
         freeway: List[GridSquare] = []
         # column freeway

@@ -11,9 +11,9 @@ from grid import Grid
 from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_total_costs_prob, \
     get_percent_monthly_income
 
-GRID_ROWS = 10
-GRID_COLS = 10
-NUM_RUNS = 10000
+GRID_ROWS = 15
+GRID_COLS = 15
+NUM_YEARS = 50
 NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
 
@@ -104,15 +104,15 @@ def initialize_persons(gl: Globals, num_threads=20000):
         ts[help_i].price_point += 600
 
 
-def sim_snapshot(counter_i, graph_data, gl: Globals, frequency=600):
+def sim_snapshot(new_year, graph_data, gl: Globals, frequency=600):
     """
     Take a data snapshot of the simulation if the mod of the counter and the frequency is zero
     :param gl: global variables object
     :param graph_data: array for visualization in grid_view
-    :param counter_i: current iteration of simulation run
+    :param new_year: boolean if it's a new year
     :param frequency: how often to take a snapshot
     """
-    if counter_i % frequency == 0:
+    if new_year:
         arr_num_people = np.zeros((GRID_ROWS, GRID_COLS))
         arr_money = np.zeros((GRID_ROWS, GRID_COLS))
         arr_house_price = np.zeros((GRID_ROWS, GRID_COLS))
@@ -163,23 +163,43 @@ def get_average_disparity(gl: Globals):
     return aggregate/count
 
 
-def main_sim_loop():
+def add_new_center(gl: Globals, center_type: str):
+    min_sq = (0, 0)
+    min_price = 3000
+    for row in gl.grid.grid:
+        for sq in row:
+            if sq.get_price() <= min_price:
+                min_sq = sq.get_location()
+                min_price = sq.get_price()
+
+    if center_type == "education":
+        gl.grid.make_education_center((1,), (min_sq,), )
+
+
+
+def main_sim_loop(business_center, education_center, crime_centers, input_year, type_event):
     from person import Person
-    gl = Globals([], [], 0, [], Grid(GRID_ROWS, GRID_COLS))
+    gl = Globals([], [], 0, [], Grid(GRID_ROWS, GRID_COLS, business_locations=business_center,
+                                     education_centers=education_center, crime_centers=crime_centers))
     graph_data = []
     initialize_persons(gl, num_threads=NUM_THREADS)
     # print the starting average disparity
-    print(get_average_disparity(gl))
-    counter = 0
+    # print(get_average_disparity(gl))
     disparities = [(0, get_average_disparity(gl))]
-    while counter < NUM_RUNS:
-        if counter % 100 == 0:
+    new_year = True
+    input_year_passed = False
+    while gl.clock <= NUM_YEARS:
+        if not input_year_passed and input_year <= gl.clock:
+            add_new_center(gl, type_event)
+            input_year_passed = True
+        if new_year:
             gl.grid.update_grid_prices()
         # if the clock has gone up a year, get a disparity reading
         if disparities[-1][0] != gl.clock:
             disparities += [(gl.clock, get_average_disparity(gl))]
         # Attempt to record a snapshot of the simulation
-        sim_snapshot(counter, graph_data, gl)
+        sim_snapshot(new_year, graph_data, gl)
+        new_year = False
         try:
             event: Event or None = heappop(gl.fel)
         except IndexError as _:
@@ -188,7 +208,12 @@ def main_sim_loop():
         if event is not None:
             # Threaded events (Person)
             if event.is_thread and event.type == 0:
+                previous_clock = gl.clock
                 gl.clock = event.time_stamp
+                if previous_clock != gl.clock:
+                    new_year = True
+                else:
+                    new_year = False
                 person: Person = gl.threads[event.process_id]
                 person.next_event = event
                 person.run()
@@ -206,16 +231,17 @@ def main_sim_loop():
                 t.next_event = event
                 t.run()
                 t.join()
-
-        counter += 1
     # print the ending average disparity
-    print(get_average_disparity(gl))
-    print(gl.clock)
+    # print(get_average_disparity(gl))
+    print("Years = " + str(gl.clock))
     print(disparities)
-    grid_view.plot_warm_up(disparities)
-    grid_view.main(graph_data, gl.grid)
+    # grid_view.plot_warm_up(disparities)
+    # grid_view.main(graph_data, gl.grid)
+    print("Simulation ended")
+    return disparities[-1][1]
 
 
 if __name__ == "__main__":
     # import statements to avoid circular imports
-    main_sim_loop()
+    main_sim_loop(business_center=((9, 9), (1, 1)), education_center=((8, 8), (2, 1)),
+                  crime_centers=((7, 7), (5, 6)), input_year=10, type_event="education")
