@@ -1,7 +1,7 @@
 from typing import List
 
 import numpy as np
-from random import random, randint
+from random import random, randint, choice
 from person import Person
 from bintrees import AVLTree
 from feature_importance import get_feature_vector
@@ -62,27 +62,28 @@ class Grid:
     def make_freeway(self, num_freeways):
         num_rows = self.get_num_rows()
         num_cols = self.get_num_cols()
-        orientation = random.choice(["row", "column"])
+        businesses = self.get_businesses()
+        f_business = choice(businesses)
+
+        orientation = choice(["row", "column"])
         # list of gridsquares in the freeway
         freeway: GridSquare = []
         # column freeway
-        if orientation.equals("column"):
+        if orientation == "column":
             freeway_length = num_rows
-            freeway_col = 0
+            freeway_col = f_business[0]
             for i in range(freeway_length):
                 freeway_square = self.get_grid_square(i, freeway_col)
                 freeway_square.set_freeway(True)
-                freeway.append(freeway_square)
+                freeway.append(freeway_square.get_location())
         # row freeway
         else:
-            # freeway_length = rand.randint(num_cols - 1)
-            # freeway_row = rand.randint(num_rows - 1)
             freeway_length = num_cols
-            freeway_row = 0
+            freeway_row = f_business[1]
             for i in range(freeway_length):
                 freeway_square = self.get_grid_square(i, freeway_row)
                 freeway_square.set_freeway(True)
-                freeway.append(freeway_square)
+                freeway.append(freeway_square.get_location())
 
         self.freeways.append(freeway)
         return
@@ -115,11 +116,13 @@ class Grid:
 
         # for e in range(randint(0,4)):
         business_levels = [0.9]
-        business_locations = [(0, 0)]
+        business_locations = [(2, 1)]
         self.make_businesses(business_levels, business_locations)
         education_level = [0.8]
-        education_centers = [(19, 19)]
+        education_centers = [(1, 5)]
         self.make_education_center(education_level, education_centers)
+
+        self.make_freeway(1)
 
         return
 
@@ -273,6 +276,8 @@ class GridSquare:
     def get_value_score(self):
         my_grid = self.grid
         # Poor people, crime, distance to business center, education level, distance to nearest highway
+
+        # Distance to business center score
         total_dist = 0
         for business in my_grid.get_businesses():
             total_dist += np.sum(np.abs(np.array(business) - np.array((self.row, self.column))))
@@ -282,6 +287,7 @@ class GridSquare:
         norm_dist = avg_dist / (my_grid.get_num_rows() + my_grid.get_num_cols())
         dist_business = norm_dist
 
+        # Education score
         total_education = 0
         for education in my_grid.get_education_centers():
             total_education += np.sum(np.abs(np.array(education) - np.array((self.row, self.column))))
@@ -290,7 +296,22 @@ class GridSquare:
         # Normalize avg dist
         norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols())
         education_level = norm_education
-        value = [0, 0, dist_business, education_level, 0]
+
+
+        total_freeway_dist = 0
+        norm_freeway_dist = 0
+        for freeway in my_grid.get_freeways():
+            for freeway_square in freeway:
+                total_freeway_dist += np.sum(np.abs(np.array(freeway_square) - np.array((self.row, self.column))))
+            # Calculate average distance
+            avg_freeway_dist = total_freeway_dist / len(freeway)
+            # Normalize avg dist
+            norm_freeway_dist = avg_freeway_dist / len(freeway)
+        dist_freeways = norm_freeway_dist
+
+
+        value = [0, 0, dist_business, education_level, dist_freeways]
+
         return np.array(value)
 
 

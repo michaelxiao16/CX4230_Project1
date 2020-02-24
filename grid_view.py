@@ -42,6 +42,10 @@ def animate(i, *fargs):
         text.set_visible(False)
     for text in ax.texts:
         text.remove()
+    for freeway in grid.get_freeways():
+        for freeway_square in freeway:
+            r, c = freeway_square
+            ax.plot([r - 0.15], [c - 0.15], marker="o", markersize=2, color="cyan")
     for row in range(grid.get_num_rows()):
         for column in range(grid.get_num_cols()):
             occ_houses = int(data_num_people[i][row, column])
