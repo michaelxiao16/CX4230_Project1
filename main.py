@@ -13,7 +13,7 @@ from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_t
 
 GRID_ROWS = 10
 GRID_COLS = 10
-NUM_RUNS = 20000
+NUM_RUNS = 10000
 NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
 
@@ -112,6 +112,7 @@ def sim_snapshot(counter_i, frequency=600):
     if counter_i % frequency == 0:
         arr_num_people = np.zeros((GRID_ROWS, GRID_COLS))
         arr_money = np.zeros((GRID_ROWS, GRID_COLS))
+        arr_house_price = np.zeros((GRID_ROWS, GRID_COLS))
         for person_i in gl.threads:
             if person_i.home_location[0] != -1:
                 loc = person_i.home_location
@@ -119,7 +120,10 @@ def sim_snapshot(counter_i, frequency=600):
         for ri in range(GRID_ROWS):
             for rj in range(GRID_COLS):
                 arr_num_people[ri, rj] = gl.grid.get_grid_square(ri, rj).get_occupied_houses()
-        graph_data.append((arr_money, arr_num_people))
+        for ri in range(GRID_ROWS):
+            for rj in range(GRID_COLS):
+                arr_house_price[ri, rj] = gl.grid.get_grid_square(ri, rj).get_price()
+        graph_data.append((arr_money, arr_num_people, arr_house_price))
 
 
 def get_average_disparity():
@@ -148,7 +152,8 @@ def get_average_disparity():
             agg_local = 0
             for n in neighbors:
                 agg_local += np.abs((sq_d.get_average_income() - n.get_average_income()))
-            agg_local /= len(neighbors)
+            if len(neighbors) != 0:
+                agg_local /= len(neighbors)
             aggregate += agg_local
             count += 1
     return aggregate/count
@@ -171,7 +176,7 @@ if __name__ == "__main__":
         if disparities[-1][0] != gl.clock:
             disparities += [(gl.clock, get_average_disparity())]
         # Attempt to record a snapshot of the simulation
-        # sim_snapshot(counter)
+        sim_snapshot(counter)
         try:
             event: Event or None = heappop(gl.fel)
         except IndexError as e:
@@ -206,4 +211,4 @@ if __name__ == "__main__":
     print(gl.clock)
     print(disparities)
     grid_view.plot_warm_up(disparities)
-    # grid_view.main(graph_data, gl.grid)
+    grid_view.main(graph_data, gl.grid)
