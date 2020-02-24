@@ -115,6 +115,7 @@ def sim_snapshot(counter_i, graph_data, gl: Globals, frequency=600):
     if counter_i % frequency == 0:
         arr_num_people = np.zeros((GRID_ROWS, GRID_COLS))
         arr_money = np.zeros((GRID_ROWS, GRID_COLS))
+        arr_house_price = np.zeros((GRID_ROWS, GRID_COLS))
         for person_i in gl.threads:
             if person_i.home_location[0] != -1:
                 loc = person_i.home_location
@@ -122,7 +123,10 @@ def sim_snapshot(counter_i, graph_data, gl: Globals, frequency=600):
         for ri in range(GRID_ROWS):
             for rj in range(GRID_COLS):
                 arr_num_people[ri, rj] = gl.grid.get_grid_square(ri, rj).get_occupied_houses()
-        graph_data.append((arr_money, arr_num_people))
+        for ri in range(GRID_ROWS):
+            for rj in range(GRID_COLS):
+                arr_house_price[ri, rj] = gl.grid.get_grid_square(ri, rj).get_price()
+        graph_data.append((arr_money, arr_num_people, arr_house_price))
 
 
 def get_average_disparity(gl: Globals):

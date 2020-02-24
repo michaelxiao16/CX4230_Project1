@@ -101,12 +101,21 @@ class Grid:
             self.businesses.append(business.get_location())
 
     def make_education_center(self, education_levels, education_centers):
-        """ Create a business in the following square """
+        """ Create a school in the following square """
         for level, location in zip(education_levels, education_centers):
             row, column = location
             education = self.get_grid_square(row, column)
             education.set_education(level)
             self.education_centers.append(education.get_location())
+
+
+    def make_crime_center(self, crime_levels, crime_centers):
+        """ Create crime in the following square """
+        for level, location in zip(crime_levels, crime_centers):
+            row, column = location
+            crime = self.get_grid_square(row, column)
+            crime.set_education(level)
+            self.crime_centers.append(crime.get_location())
 
     def create_grid(self, rows, columns):
         grid = np.array([[GridSquare(r, c,
@@ -116,9 +125,10 @@ class Grid:
         return grid
 
     def grid_setup(self, business_levels=(0.9,), business_locations=((2, 1),), education_level=(0.8,),
-                   education_centers=((1, 5),), num_freeways=1):
+                   education_centers=((1, 5),), crime_level=(0.9,), crime_centers=((2, 3),), num_freeways=1):
         self.make_businesses(business_levels, business_locations)
         self.make_education_center(education_level, education_centers)
+        self.make_crime_center(crime_level, crime_centers)
         self.make_freeway(num_freeways)
 
     def update_grid_prices(self):
@@ -176,6 +186,10 @@ class Grid:
 
     def get_education_centers(self):
         return self.education_centers
+
+    def get_crime_centers(self):
+        return self.crime_centers
+
 
     from person import Person
 
@@ -294,6 +308,16 @@ class GridSquare:
         norm_education = avg_education / (my_grid.get_num_rows() + my_grid.get_num_cols())
         education_level = norm_education
 
+        # Distance to crime center score
+        total_crime = 0
+        for crime in my_grid.get_crime_centers():
+            total_crime += np.sum(np.abs(np.array(crime) - np.array((self.row, self.column))))
+        # Calculate average distance
+        avg_crime = total_crime / len(my_grid.get_crime_centers())
+        # Normalize avg dist
+        norm_crime = avg_crime / (my_grid.get_num_rows() + my_grid.get_num_cols())
+        crime_level = -norm_crime
+
         total_freeway_dist = 0
         norm_freeway_dist = 0
         for freeway in my_grid.get_freeways():
@@ -311,7 +335,7 @@ class GridSquare:
                 lstat_score += 1
         l_stat_norm = lstat_score / 10.
 
-        value = [l_stat_norm, 0, dist_business, education_level, dist_freeways]
+        value = [l_stat_norm, crime_level, dist_business, education_level, dist_freeways]
 
         return np.array(value)
 
