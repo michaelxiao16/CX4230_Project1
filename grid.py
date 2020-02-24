@@ -142,13 +142,21 @@ class Grid:
                 monthly_cost_non_cum.insert(0, (monthly_cost_data[i][0], monthly_cost_data[i][1] - monthly_cost_data[i-1][1]))
             else:
                 monthly_cost_non_cum.insert(0, (monthly_cost_data[i][0], monthly_cost_data[i][1]))
-        for pair in monthly_cost_data:
+        a = sum([x[1] for x in monthly_cost_non_cum])
+        for pair in monthly_cost_non_cum:
             num = int(np.ceil(pair[1] * total))
             for _ in range(num):
                 try:
                     sqs.pop(0)[1].set_price(pair[0])
                 except IndexError as _:
                     continue
+        self.tree = AVLTree()
+        for row in self.grid:
+            for gs in row:
+                if gs.get_total_houses() - gs.get_occupied_houses() > 0:
+                    self.add_gs_to_tree(gs)
+                else:
+                    gs.in_tree = False
     """ GRID GETTERS ------------------------------------------------------------------------------------------------"""
 
     def get_size(self):

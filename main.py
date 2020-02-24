@@ -13,7 +13,7 @@ from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_t
 
 GRID_ROWS = 10
 GRID_COLS = 10
-NUM_RUNS = 10000
+NUM_RUNS = 7500
 NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
 
