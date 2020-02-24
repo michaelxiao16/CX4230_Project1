@@ -1,7 +1,7 @@
 from typing import List
 
 import numpy as np
-from random import random, randint
+from random import random, randint, choice
 from person import Person
 from bintrees import AVLTree
 from feature_importance import get_feature_vector
@@ -62,27 +62,28 @@ class Grid:
     def make_freeway(self, num_freeways):
         num_rows = self.get_num_rows()
         num_cols = self.get_num_cols()
-        orientation = random.choice(["row", "column"])
+        businesses = self.get_businesses()
+        f_business = choice(businesses)
+
+        orientation = choice(["row", "column"])
         # list of gridsquares in the freeway
         freeway: GridSquare = []
         # column freeway
-        if orientation.equals("column"):
+        if orientation == "column":
             freeway_length = num_rows
-            freeway_col = 0
+            freeway_col = f_business[0]
             for i in range(freeway_length):
                 freeway_square = self.get_grid_square(i, freeway_col)
                 freeway_square.set_freeway(True)
-                freeway.append(freeway_square)
+                freeway.append(freeway_square.get_location())
         # row freeway
         else:
-            # freeway_length = rand.randint(num_cols - 1)
-            # freeway_row = rand.randint(num_rows - 1)
             freeway_length = num_cols
-            freeway_row = 0
+            freeway_row = f_business[1]
             for i in range(freeway_length):
                 freeway_square = self.get_grid_square(i, freeway_row)
                 freeway_square.set_freeway(True)
-                freeway.append(freeway_square)
+                freeway.append(freeway_square.get_location())
 
         self.freeways.append(freeway)
         return
@@ -115,11 +116,13 @@ class Grid:
 
         # for e in range(randint(0,4)):
         business_levels = [0.9]
-        business_locations = [(1, 1)]
+        business_locations = [(2, 1)]
         self.make_businesses(business_levels, business_locations)
         education_level = [0.8]
         education_centers = [(1, 5)]
         self.make_education_center(education_level, education_centers)
+
+        self.make_freeway(1)
 
         return
 

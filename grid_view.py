@@ -39,6 +39,13 @@ def animate(i, *fargs):
             grid_square = grid.get_grid_square(row, column)
             occ_houses = grid_square.get_occupied_houses()
             ax.text(row+0.15, column-0.15, str(occ_houses), color="yellow", fontsize=8)
+    for freeway in grid.get_freeways():
+        for freeway_square in freeway:
+            r, c = freeway_square
+            ax.plot([r-0.15], [c-0.15], marker="o", markersize=2, color="cyan")
+
+
+
 
 
     plt.show()
