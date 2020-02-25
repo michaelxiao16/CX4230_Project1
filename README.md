@@ -10,6 +10,12 @@ We are using Python3. To get this to run on the PACE cluster, we did the followi
 > module load anaconda3/2019.10
 > conda activate
 ```
+Alternatively, you can use
+```
+> module load python/3.6
+
+```
+
 This will start a anaconda virtual environment, on which Python3+ should be the default. 
 Verify that the version of python running is Python3+. In our case we had Python 3.7.4
 
