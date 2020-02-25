@@ -61,9 +61,13 @@ def build_education_confidence(num_trials=30):
 
 def build_rand_confidence(num_trials=30):
     vals = [disparity_random() for i in range(num_trials)]
+    print(vals)
     avg = np.average(vals)
+    print(avg)
     std = np.std(vals)
+    print(std)
     interval = confidence_interval(avg, std, num_trials)
+    print(interval)
     return interval
 
 
@@ -78,6 +82,7 @@ def disparity_crime():
 
 def build_crime_confidence(num_trials=30):
     vals = [disparity_crime() for i in range(num_trials)]
+    print(vals)
     avg = np.average(vals)
     print(avg)
     std = np.std(vals)
@@ -88,8 +93,8 @@ def build_crime_confidence(num_trials=30):
 
 
 if __name__ == '__main__':
-    print(build_rand_confidence())
-    print(build_education_confidence())
-    print(build_crime_confidence())
+    # print(build_rand_confidence())
+    # print(build_education_confidence())
+    # print(build_crime_confidence())
     print(build_business_confidence())
 
