@@ -174,6 +174,14 @@ def add_new_center(gl: Globals, center_type: str):
 
     if center_type == "education":
         gl.grid.make_education_center((1,), (min_sq,), )
+    if center_type == "business":
+        gl.grid.make_businesses((1, ), (min_sq,))
+    if center_type =="crime":
+        del gl.grid.get_crime_centers()[0]
+
+
+
+
 
 
 
@@ -244,4 +252,4 @@ def main_sim_loop(business_center, education_center, crime_centers, input_year, 
 if __name__ == "__main__":
     # import statements to avoid circular imports
     main_sim_loop(business_center=((9, 9), (1, 1)), education_center=((8, 8), (2, 1)),
-                  crime_centers=((7, 7), (5, 6)), input_year=10, type_event="education")
+                  crime_centers=((7, 7), (5, 6)), input_year=10, type_event="crime")
