@@ -38,6 +38,7 @@ def disparity_business():
 
 def build_business_confidence(num_trials=30):
     vals = [disparity_business() for i in range(num_trials)]
+    print(vals)
     avg = np.average(vals)
     print(avg)
     std = np.std(vals)
@@ -93,8 +94,8 @@ def build_crime_confidence(num_trials=30):
 
 
 if __name__ == '__main__':
-    # print(build_rand_confidence())
-    # print(build_education_confidence())
-    # print(build_crime_confidence())
+    print(build_rand_confidence())
+    print(build_education_confidence())
+    print(build_crime_confidence())
     print(build_business_confidence())
 

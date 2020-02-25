@@ -67,8 +67,9 @@ class Person(Thread):
         # Create new move in event to add to the future event list
         # TODO: Looks like the event is not being scheduled according to probability distribution. Needs to be fixed
         event = Event(self.gl.clock + random.randint(0, 3), self.pid, self.move_in_event, True, 1)
-        # print("moved out of " + str(loc[0]) + ' ' + str(loc[1]))
+        print("Person " + str(self.pid) + " moved out of " + str(loc[0]) + ' ' + str(loc[1]))
         self.schedule_event(event)
+        print("move out event scheduled for simulation time " + str(self.gl.clock + random.randint(0, 3)))
 
     def move_in_event(self, row, col):
         """
@@ -87,8 +88,9 @@ class Person(Thread):
         years = self.sample_move_out_distribution(years)
         t = self.gl.clock + years
         event = Event(t, self.pid, self.move_out_event, True, 0)
-        # print("moved into " + str(loc[0]) + ' ' + str(loc[1]))
+        print("Person " + str(self.pid) + " moved into " + str(loc[0]) + ' ' + str(loc[1]))
         self.schedule_event(event)
+        print("move out event scheduled for simulation time " + str(t))
 
     def schedule_event(self, event_i: Event):
         """

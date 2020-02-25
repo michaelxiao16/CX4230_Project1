@@ -13,7 +13,7 @@ from prob_distributions import get_salary_prob, get_move_out_prob, get_monthly_t
 
 GRID_ROWS = 15
 GRID_COLS = 15
-NUM_YEARS = 50
+NUM_YEARS = 30
 NUM_THREADS = GRID_COLS * GRID_ROWS * 10
 
 
@@ -127,6 +127,7 @@ def sim_snapshot(new_year, graph_data, gl: Globals, frequency=600):
             for rj in range(GRID_COLS):
                 arr_house_price[ri, rj] = gl.grid.get_grid_square(ri, rj).get_price()
         graph_data.append((arr_money, arr_num_people, arr_house_price))
+        print("simulation snapshot recorded")
 
 
 def get_average_disparity(gl: Globals):
@@ -180,11 +181,6 @@ def add_new_center(gl: Globals, center_type: str):
         del gl.grid.get_crime_centers()[0]
 
 
-
-
-
-
-
 def main_sim_loop(business_center, education_center, crime_centers, input_year, type_event):
     from person import Person
     gl = Globals([], [], 0, [], Grid(GRID_ROWS, GRID_COLS, business_locations=business_center,
@@ -205,6 +201,7 @@ def main_sim_loop(business_center, education_center, crime_centers, input_year, 
         # if the clock has gone up a year, get a disparity reading
         if disparities[-1][0] != gl.clock:
             disparities += [(gl.clock, get_average_disparity(gl))]
+            print("Average disparity at year " + str(gl.clock) + ": " + str(disparities[-1][1]))
         # Attempt to record a snapshot of the simulation
         sim_snapshot(new_year, graph_data, gl)
         new_year = False
@@ -219,6 +216,7 @@ def main_sim_loop(business_center, education_center, crime_centers, input_year, 
                 previous_clock = gl.clock
                 gl.clock = event.time_stamp
                 if previous_clock != gl.clock:
+                    print("Advance simulation time 1 year")
                     new_year = True
                 else:
                     new_year = False
@@ -234,6 +232,7 @@ def main_sim_loop(business_center, education_center, crime_centers, input_year, 
             event = gl.wait_list[i]
             sq, _, _ = gl.grid.find_appropriate_housing(gl.threads[event.process_id])
             if sq is not None:
+                print("appropriate housing found, removing person " + str(event.process_id) + " from the waiting list")
                 del gl.wait_list[i]
                 t = gl.threads[event.process_id]
                 t.next_event = event
@@ -251,5 +250,5 @@ def main_sim_loop(business_center, education_center, crime_centers, input_year, 
 
 if __name__ == "__main__":
     # import statements to avoid circular imports
-    main_sim_loop(business_center=((9, 9), (1, 1)), education_center=((8, 8), (2, 1)),
-                  crime_centers=((7, 7), (5, 6)), input_year=10, type_event="crime")
+    main_sim_loop(business_center=((9, 9),), education_center=((8, 8),),
+                  crime_centers=((7, 7),), input_year=100, type_event="")
