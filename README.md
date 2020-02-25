@@ -2,6 +2,8 @@ README for the first CX 4230 Project
 
 # Event-Driven Simulation Project: City Simulation
 
+First, to download this git project, DO NOT download the zip file. 
+Instead, run git clone https://github.com/michaelxiao16/CX4230_Project1.git
 
 We are using Python3. To get this to run on the PACE cluster, we did the following:
 ```
